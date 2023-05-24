@@ -2,8 +2,7 @@ import * as acorn from "acorn";
 import "reflect-metadata";
 
 export function Controller(target: Function) {
-  target.prototype.id = 1234;
-  console.log("hi from controller decorator");
+  console.log("hi from controller decorator", target);
 }
 
 export function Query(target: Object, propertyKey: string, index: number) {
@@ -44,7 +43,7 @@ export function Get(url: string) {
             return request.params[param];
           }
         });
-        return { res: descriptor.value.call(target, ...args) };
+        return descriptor.value.call(target, ...args);
       }
     );
   };
