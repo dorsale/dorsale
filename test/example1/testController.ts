@@ -1,7 +1,6 @@
 import { Controller, Get, Query } from "../../src/decorators";
 
-
-@Controller
+@Controller()
 export class TestController {
   @Get("/test/:n")
   test(@Query m: string, @Query p: string, n: string) {

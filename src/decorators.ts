@@ -1,50 +1,72 @@
 import * as acorn from "acorn";
 import "reflect-metadata";
+import { RouteOptions } from "fastify";
 
-export function Controller(target: Function) {
-  console.log("hi from controller decorator", target);
+export function Controller(prefix?: string) {
+  return (target: Function) => {
+    const routes: RouteEntry[] =
+      Reflect.getOwnMetadata("routes", target.prototype) || [];
+
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const plugin = async function(fastify, opts) {
+      for (const route of routes) {
+        fastify.route({
+          method: route.method,
+          url: prefix ?? "" + route.url,
+          handler: route.handler
+        } as RouteOptions);
+      }
+    };
+    global["$$fastify"].register(plugin);
+  };
 }
 
-export function Query(target: Object, propertyKey: string, index: number) {
-  const queryParamNames = Reflect.getOwnMetadata("queryParamNames", target, propertyKey) || [];
+export function Query(target: object, propertyKey: string, index: number) {
+  const queryParamNames =
+    Reflect.getOwnMetadata("queryParamNames", target, propertyKey) || [];
   queryParamNames.push(index);
-  Reflect.defineMetadata("queryParamNames", queryParamNames, target, propertyKey);
-  console.log("hi from query decorator");
-  console.log(target);
-  console.log(propertyKey);
-  console.log(index);
+  Reflect.defineMetadata(
+    "queryParamNames",
+    queryParamNames,
+    target,
+    propertyKey
+  );
 }
+
+type RouteEntry = {
+  url: string;
+  method: string;
+  handler: Function;
+};
 
 export function Get(url: string) {
   return function(
-    target: Object,
+    target: object,
     propertyKey: string,
     descriptor: PropertyDescriptor
   ) {
-    console.log("hi from get decorator");
-    console.log(descriptor.value.toString());
-    const methodAst = acorn.parseExpressionAt(descriptor.value.toString(), 0, { ecmaVersion: 2020 });
-    console.log(methodAst);
+    const routes: RouteEntry[] = Reflect.getOwnMetadata("routes", target) || [];
+    const methodAst = acorn.parseExpressionAt(descriptor.value.toString(), 0, {
+      ecmaVersion: 2020
+    });
     // @ts-ignore
     const params = methodAst.arguments.map((param) => param.name);
-    console.log(params);
-    const queryParamIndexes = Reflect.getOwnMetadata("queryParamNames", target, propertyKey) || [];
-    console.log(`queryParamIndexes: ${queryParamIndexes}`);
-    global["$$fastify"].get(
+    const queryParamIndexes =
+      Reflect.getOwnMetadata("queryParamNames", target, propertyKey) || [];
+    routes.push({
       url,
-      (request) => {
+      method: "GET",
+      handler: (request) => {
         const args = params.map((param, index) => {
           if (queryParamIndexes.includes(index)) {
-            console.log(`${param} is a query param`);
-            console.log(`request.query[${param}]: ${request.query[param]}`);
             return request.query[param];
           } else {
-            console.log(`${param} is a route param`);
             return request.params[param];
           }
         });
         return descriptor.value.call(target, ...args);
       }
-    );
+    });
+    Reflect.defineMetadata("routes", routes, target);
   };
 }

@@ -1,2 +1,2 @@
-export { dorsal } from "./server";
+export { dorsal } from "./dorsal";
 export { Controller, Get, Query } from "./decorators";

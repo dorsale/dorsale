@@ -1,17 +1,19 @@
 import Fastify, { FastifyInstance } from "fastify";
 import fg from "fast-glob";
-import { fileToAst, isController } from "./util";
+import { DorsalOptions, fileToAst, isController } from "./util";
 import path from "path";
 
-export async function dorsal(currentDir: string = process.cwd() + "/src") {
+export async function server(options: DorsalOptions) {
+  const currentDir = options.currentDir || process.cwd() + "/src";
   const fastify: FastifyInstance = Fastify({ logger: true });
   global["$$fastify"] = fastify;
 
   const files = fg.sync(["**/*.ts"], { cwd: currentDir });
   for (const file of files) {
-    const ast = fileToAst(currentDir + "/" + file);
+    const filename = path.join(currentDir, file);
+    const ast = fileToAst(filename);
     if (isController(ast)) {
-      await import(path.join(currentDir, file));
+      await import(filename);
     }
   }
 

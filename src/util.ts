@@ -18,7 +18,7 @@ export function isController(fileAst: Node) {
       if (node.type === "ClassDeclaration") {
         // @ts-ignore
         node.decorators?.forEach((d) => {
-          if (d.expression.name === "Controller") {
+          if (d.expression.callee.name === "Controller") {
             res = true;
             this.skip();
           }
@@ -28,3 +28,8 @@ export function isController(fileAst: Node) {
   });
   return res;
 }
+
+export type DorsalOptions = {
+  currentDir?: string;
+  port?: number;
+};

@@ -12,8 +12,10 @@
     "package.json"
   ],
   "scripts": {
-    "build": "tsc",
-    "test": "mocha --exit"
+    "build": "tsc --project tsconfig.prod.json",
+    "test": "mocha --exit",
+    "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
+    "lint": "eslint --ext .ts src test"
   },
   "keywords": [],
   "author": "Joel DIBASSO <joel@dibasso.fr>",

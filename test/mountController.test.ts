@@ -1,9 +1,9 @@
 import { expect } from "chai";
-import { dorsal } from "../src/server";
+import { server } from "../src/server";
 
 describe("bar", () => {
   it("should be equal to bar", async () => {
-    const app = await dorsal(process.cwd() + "/test/example1");
+    const app = await server({ currentDir: process.cwd() + "/test/example1" });
     const response = await app.inject({
       method: "GET",
       url: "/test/3?m=2&p=1"
