@@ -1,16 +1,23 @@
 {
-  "name": "dorsal",
-  "version": "1.0.0",
-  "description": "Dorsal is an attempt at creating a TS equivalent of Spring for Java",
+  "name": "@dj256/dorsal",
+  "version": "0.0.1",
+  "description": "Dorsal is an attempt at creating a TS equivalent of Spring",
   "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "LICENSE",
+    "README.md",
+    "package.json"
+  ],
   "scripts": {
-    "start": "tsx src/index.ts",
-    "dev": "tsx watch src/index.ts",
+    "build": "tsc",
     "test": "mocha --exit"
   },
   "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "author": "Joel DIBASSO <joel@dibasso.fr>",
+  "license": "MIT",
   "devDependencies": {
     "@babel/cli": "^7.21.5",
     "@babel/core": "^7.21.8",
@@ -28,7 +35,6 @@
     "nodemon": "^2.0.22",
     "prettier": "2.8.8",
     "ts-node": "^10.9.1",
-    "ts-node-dev": "^2.0.0",
     "tsx": "^3.12.7",
     "typescript": "^5.0.4"
   },

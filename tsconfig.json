@@ -9,9 +9,10 @@
     "strict": true,
     "noImplicitAny": false,
     "skipLibCheck": true,
-    "outDir": "dist"
+    "outDir": "dist",
+    "declaration": true
   },
   "include": [
-    "/**/*.ts"
+    "src/**/*.ts"
   ]
 }
