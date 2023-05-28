@@ -1,5 +1,5 @@
 import { dorsal } from "../src";
 
 dorsal({
-  currentDir: process.cwd() + "/test/simple-controller",
+  currentDir: process.cwd() + "/test/all-methods-controller",
 }).then();

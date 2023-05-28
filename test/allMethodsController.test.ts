@@ -27,4 +27,17 @@ describe("All methods controller", () => {
         expect(response.statusCode).to.equal(200);
         expect(JSON.parse(response.body)).to.deep.equal(controller.names);
       }));
+
+  it("should add a new name", () =>
+    server
+      .inject({
+        method: "POST",
+        url: "/",
+        payload: "Henry",
+        headers: { "Content-Type": "text/plain" },
+      })
+      .then((response) => {
+        expect(response.statusCode).to.equal(200);
+        expect(controller.names).to.include("Henry");
+      }));
 });

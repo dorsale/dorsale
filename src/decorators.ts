@@ -1,5 +1,6 @@
 import * as acorn from "acorn";
 import "reflect-metadata";
+import { BODY_PARAM_INDEX } from "./util";
 
 export function Controller(prefix?: string) {
   return (target: Function) => {
@@ -116,7 +117,7 @@ export function Delete(url: string) {
 
 export function Body(target: object, propertyKey: string, index: number) {
   Reflect.defineMetadata(
-    "bodyParamName",
+    BODY_PARAM_INDEX,
     index,
     target,
     propertyKey
