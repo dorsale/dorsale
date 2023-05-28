@@ -1,9 +1,9 @@
-import { server } from "./server";
+import { mountApp } from "./app";
 import { DorsalOptions } from "./util";
 
 export async function dorsal(options: DorsalOptions) {
-  const app = await server(options);
-  app.listen({ port: options.port ?? 3000 }, (err, address) => {
+  const { server } = await mountApp(options);
+  server.listen({ port: options.port ?? 3000 }, (err, address) => {
     if (err) {
       console.error(err);
       process.exit(1);

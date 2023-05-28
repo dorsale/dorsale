@@ -1,72 +1,124 @@
 import * as acorn from "acorn";
 import "reflect-metadata";
-import { RouteOptions } from "fastify";
 
 export function Controller(prefix?: string) {
   return (target: Function) => {
-    const routes: RouteEntry[] =
-      Reflect.getOwnMetadata("routes", target.prototype) || [];
-
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const plugin = async function(fastify, opts) {
-      for (const route of routes) {
-        fastify.route({
-          method: route.method,
-          url: prefix ?? "" + route.url,
-          handler: route.handler
-        } as RouteOptions);
-      }
-    };
-    global["$$fastify"].register(plugin);
+    if (prefix) {
+      Reflect.defineMetadata("prefix", prefix, target);
+    }
   };
 }
 
 export function Query(target: object, propertyKey: string, index: number) {
-  const queryParamNames =
-    Reflect.getOwnMetadata("queryParamNames", target, propertyKey) || [];
-  queryParamNames.push(index);
+  const queryParamIndexes =
+    Reflect.getOwnMetadata("queryParamIndexes", target, propertyKey) || [];
+  queryParamIndexes.push(index);
   Reflect.defineMetadata(
-    "queryParamNames",
-    queryParamNames,
+    "queryParamIndexes",
+    queryParamIndexes,
     target,
     propertyKey
   );
 }
 
-type RouteEntry = {
+export type RouteEntry = {
   url: string;
   method: string;
-  handler: Function;
+  mapTo: {
+    controller: string,
+    method: string
+  };
 };
 
+enum HttpMethod {
+  GET="GET",
+  POST="POST",
+  PUT = "PUT",
+  PATCH = "PATCH",
+  DELETE = "DELETE",
+}
+
+function addEndpoint(
+  method: HttpMethod,
+  url: string,
+  target: object,
+  propertyKey: string,
+  descriptor: PropertyDescriptor
+) {
+  const routes: RouteEntry[] = Reflect.getOwnMetadata("routes", target) || [];
+  const methodAst = acorn.parseExpressionAt(descriptor.value.toString(), 0, {
+    ecmaVersion: 2020,
+  });
+  // @ts-ignore
+  const params = methodAst.arguments.map((param) => param.name);
+  Reflect.defineMetadata("params", params, target, propertyKey)
+  routes.push({
+    url,
+    method: method.toString(),
+    mapTo: {
+      // @ts-ignore
+      controller: target.constructor.name,
+      method: propertyKey
+    }
+  });
+  Reflect.defineMetadata("routes", routes, target);
+}
+
 export function Get(url: string) {
-  return function(
+  return function (
     target: object,
     propertyKey: string,
     descriptor: PropertyDescriptor
   ) {
-    const routes: RouteEntry[] = Reflect.getOwnMetadata("routes", target) || [];
-    const methodAst = acorn.parseExpressionAt(descriptor.value.toString(), 0, {
-      ecmaVersion: 2020
-    });
-    // @ts-ignore
-    const params = methodAst.arguments.map((param) => param.name);
-    const queryParamIndexes =
-      Reflect.getOwnMetadata("queryParamNames", target, propertyKey) || [];
-    routes.push({
-      url,
-      method: "GET",
-      handler: (request) => {
-        const args = params.map((param, index) => {
-          if (queryParamIndexes.includes(index)) {
-            return request.query[param];
-          } else {
-            return request.params[param];
-          }
-        });
-        return descriptor.value.call(target, ...args);
-      }
-    });
-    Reflect.defineMetadata("routes", routes, target);
+    addEndpoint(HttpMethod.GET, url,target, propertyKey, descriptor)
   };
+}
+
+export function Post(url: string) {
+  return function (
+    target: object,
+    propertyKey: string,
+    descriptor: PropertyDescriptor
+  ) {
+    addEndpoint(HttpMethod.POST, url,target, propertyKey, descriptor)
+  };
+}
+
+export function Put(url: string) {
+  return function (
+    target: object,
+    propertyKey: string,
+    descriptor: PropertyDescriptor
+  ) {
+    addEndpoint(HttpMethod.PUT, url,target, propertyKey, descriptor)
+  };
+}
+
+export function Patch(url: string) {
+  return function (
+    target: object,
+    propertyKey: string,
+    descriptor: PropertyDescriptor
+  ) {
+    addEndpoint(HttpMethod.PATCH, url,target, propertyKey, descriptor)
+  };
+}
+
+export function Delete(url: string) {
+  return function (
+    target: object,
+    propertyKey: string,
+    descriptor: PropertyDescriptor
+  ) {
+    addEndpoint(HttpMethod.DELETE, url,target, propertyKey, descriptor)
+  };
+}
+
+export function Body(target: object, propertyKey: string, index: number) {
+  Reflect.defineMetadata(
+    "bodyParamName",
+    index,
+    target,
+    propertyKey
+  );
 }
