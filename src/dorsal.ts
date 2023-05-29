@@ -1,13 +1,18 @@
 import { mountApp } from "./app";
 import { DorsalOptions } from "./util";
 
+/**
+ * Creates a new dorsal application and mounts it on the given port
+ * @param options The options to use when creating the application
+ */
 export async function dorsal(options: DorsalOptions) {
-  const { server } = await mountApp(options);
-  server.listen({ port: options.port ?? 3000 }, (err, address) => {
+  const all = await mountApp(options);
+  all.server.listen({ port: options.port ?? 3000 }, (err, address) => {
     if (err) {
       console.error(err);
       process.exit(1);
     }
     console.log(`Server listening at ${address}`);
   });
+  return all;
 }

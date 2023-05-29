@@ -5,9 +5,16 @@ import {
   CONTROLLER_PREFIX,
   CONTROLLER_ROUTES,
   ENDPOINT_PARAMS,
+  HttpMethod,
   QUERY_PARAM_INDEXES,
+  RouteEntry
 } from "./util";
 
+/**
+ * Decorator for controller classes
+ * @param prefix - prefix for all endpoints in this controller
+ * @constructor
+ */
 export function Controller(prefix?: string) {
   return (target: Function) => {
     if (prefix) {
@@ -16,6 +23,13 @@ export function Controller(prefix?: string) {
   };
 }
 
+/**
+ * Decorator for query parameters
+ * @param target - target object (the controller)
+ * @param propertyKey - name of the method
+ * @param index - index of the parameter in the method declaration
+ * @constructor
+ */
 export function Query(target: object, propertyKey: string, index: number) {
   const queryParamIndexes =
     Reflect.getOwnMetadata(QUERY_PARAM_INDEXES, target, propertyKey) || [];
@@ -28,23 +42,14 @@ export function Query(target: object, propertyKey: string, index: number) {
   );
 }
 
-export type RouteEntry = {
-  url: string;
-  method: string;
-  mapTo: {
-    controller: string;
-    method: string;
-  };
-};
-
-enum HttpMethod {
-  GET = "GET",
-  POST = "POST",
-  PUT = "PUT",
-  PATCH = "PATCH",
-  DELETE = "DELETE",
-}
-
+/**
+ * Adds an endpoint to the controller metadata
+ * @param method - HTTP method
+ * @param url - url for the endpoint
+ * @param target - target object (the controller)
+ * @param propertyKey - name of the method
+ * @param descriptor - the method descriptor
+ */
 function addEndpoint(
   method: HttpMethod,
   url: string,
@@ -72,6 +77,11 @@ function addEndpoint(
   Reflect.defineMetadata(CONTROLLER_ROUTES, routes, target);
 }
 
+/**
+ * Decorator for GET endpoints
+ * @param url - url for the endpoint
+ * @constructor
+ */
 export function Get(url: string) {
   return function (
     target: object,
@@ -82,6 +92,11 @@ export function Get(url: string) {
   };
 }
 
+/**
+ * Decorator for POST endpoints
+ * @param url - url for the endpoint
+ * @constructor
+ */
 export function Post(url: string) {
   return function (
     target: object,
@@ -92,6 +107,11 @@ export function Post(url: string) {
   };
 }
 
+/**
+ * Decorator for PUT endpoints
+ * @param url - url for the endpoint
+ * @constructor
+ */
 export function Put(url: string) {
   return function (
     target: object,
@@ -102,6 +122,11 @@ export function Put(url: string) {
   };
 }
 
+/**
+ * Decorator for PATCH endpoints
+ * @param url - url for the endpoint
+ * @constructor
+ */
 export function Patch(url: string) {
   return function (
     target: object,
@@ -112,6 +137,11 @@ export function Patch(url: string) {
   };
 }
 
+/**
+ * Decorator for DELETE endpoints
+ * @param url - url for the endpoint
+ * @constructor
+ */
 export function Delete(url: string) {
   return function (
     target: object,
@@ -122,6 +152,13 @@ export function Delete(url: string) {
   };
 }
 
+/**
+ * Decorator for body parameters
+ * @param target - target object (the controller)
+ * @param propertyKey - name of the method
+ * @param index - index of the parameter in the method declaration
+ * @constructor
+ */
 export function Body(target: object, propertyKey: string, index: number) {
   Reflect.defineMetadata(BODY_PARAM_INDEX, index, target, propertyKey);
 }

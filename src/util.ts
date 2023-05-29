@@ -12,7 +12,7 @@ export function fileToAst(filename: string) {
 }
 
 export function isController(fileAst: Node) {
-  let res: string| undefined = undefined;
+  let res: string | undefined = undefined;
   walk(fileAst, {
     enter(node) {
       if (node.type === "ClassDeclaration") {
@@ -24,7 +24,7 @@ export function isController(fileAst: Node) {
           }
         });
       }
-    }
+    },
   });
   return res;
 }
@@ -34,8 +34,26 @@ export type DorsalOptions = {
   port?: number;
 };
 
-export const QUERY_PARAM_INDEXES = "queryParamIndexes"
-export const BODY_PARAM_INDEX = "bodyParamIndex"
-export const ENDPOINT_PARAMS = "endpointParams"
-export const CONTROLLER_ROUTES = "controllerRoutes"
-export const CONTROLLER_PREFIX = "controllerPrefix"
+export type RouteEntry = {
+  url: string;
+  method: string;
+  mapTo: {
+    controller: string;
+    method: string;
+  };
+};
+
+export enum HttpMethod {
+  GET = "GET",
+  POST = "POST",
+  PUT = "PUT",
+  PATCH = "PATCH",
+  DELETE = "DELETE",
+}
+
+export const QUERY_PARAM_INDEXES = "queryParamIndexes";
+export const BODY_PARAM_INDEX = "bodyParamIndex";
+export const ENDPOINT_PARAMS = "endpointParams";
+export const CONTROLLER_ROUTES = "controllerRoutes";
+export const CONTROLLER_PREFIX = "controllerPrefix";
+
