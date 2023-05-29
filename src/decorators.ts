@@ -1,21 +1,27 @@
 import * as acorn from "acorn";
 import "reflect-metadata";
-import { BODY_PARAM_INDEX } from "./util";
+import {
+  BODY_PARAM_INDEX,
+  CONTROLLER_PREFIX,
+  CONTROLLER_ROUTES,
+  ENDPOINT_PARAMS,
+  QUERY_PARAM_INDEXES,
+} from "./util";
 
 export function Controller(prefix?: string) {
   return (target: Function) => {
     if (prefix) {
-      Reflect.defineMetadata("prefix", prefix, target);
+      Reflect.defineProperty(target, CONTROLLER_PREFIX, { value: prefix });
     }
   };
 }
 
 export function Query(target: object, propertyKey: string, index: number) {
   const queryParamIndexes =
-    Reflect.getOwnMetadata("queryParamIndexes", target, propertyKey) || [];
+    Reflect.getOwnMetadata(QUERY_PARAM_INDEXES, target, propertyKey) || [];
   queryParamIndexes.push(index);
   Reflect.defineMetadata(
-    "queryParamIndexes",
+    QUERY_PARAM_INDEXES,
     queryParamIndexes,
     target,
     propertyKey
@@ -26,14 +32,14 @@ export type RouteEntry = {
   url: string;
   method: string;
   mapTo: {
-    controller: string,
-    method: string
+    controller: string;
+    method: string;
   };
 };
 
 enum HttpMethod {
-  GET="GET",
-  POST="POST",
+  GET = "GET",
+  POST = "POST",
   PUT = "PUT",
   PATCH = "PATCH",
   DELETE = "DELETE",
@@ -46,23 +52,24 @@ function addEndpoint(
   propertyKey: string,
   descriptor: PropertyDescriptor
 ) {
-  const routes: RouteEntry[] = Reflect.getOwnMetadata("routes", target) || [];
+  const routes: RouteEntry[] =
+    Reflect.getOwnMetadata(CONTROLLER_ROUTES, target) || [];
   const methodAst = acorn.parseExpressionAt(descriptor.value.toString(), 0, {
     ecmaVersion: 2020,
   });
   // @ts-ignore
   const params = methodAst.arguments.map((param) => param.name);
-  Reflect.defineMetadata("params", params, target, propertyKey)
+  Reflect.defineMetadata(ENDPOINT_PARAMS, params, target, propertyKey);
   routes.push({
     url,
     method: method.toString(),
     mapTo: {
       // @ts-ignore
       controller: target.constructor.name,
-      method: propertyKey
-    }
+      method: propertyKey,
+    },
   });
-  Reflect.defineMetadata("routes", routes, target);
+  Reflect.defineMetadata(CONTROLLER_ROUTES, routes, target);
 }
 
 export function Get(url: string) {
@@ -71,7 +78,7 @@ export function Get(url: string) {
     propertyKey: string,
     descriptor: PropertyDescriptor
   ) {
-    addEndpoint(HttpMethod.GET, url,target, propertyKey, descriptor)
+    addEndpoint(HttpMethod.GET, url, target, propertyKey, descriptor);
   };
 }
 
@@ -81,7 +88,7 @@ export function Post(url: string) {
     propertyKey: string,
     descriptor: PropertyDescriptor
   ) {
-    addEndpoint(HttpMethod.POST, url,target, propertyKey, descriptor)
+    addEndpoint(HttpMethod.POST, url, target, propertyKey, descriptor);
   };
 }
 
@@ -91,7 +98,7 @@ export function Put(url: string) {
     propertyKey: string,
     descriptor: PropertyDescriptor
   ) {
-    addEndpoint(HttpMethod.PUT, url,target, propertyKey, descriptor)
+    addEndpoint(HttpMethod.PUT, url, target, propertyKey, descriptor);
   };
 }
 
@@ -101,7 +108,7 @@ export function Patch(url: string) {
     propertyKey: string,
     descriptor: PropertyDescriptor
   ) {
-    addEndpoint(HttpMethod.PATCH, url,target, propertyKey, descriptor)
+    addEndpoint(HttpMethod.PATCH, url, target, propertyKey, descriptor);
   };
 }
 
@@ -111,15 +118,10 @@ export function Delete(url: string) {
     propertyKey: string,
     descriptor: PropertyDescriptor
   ) {
-    addEndpoint(HttpMethod.DELETE, url,target, propertyKey, descriptor)
+    addEndpoint(HttpMethod.DELETE, url, target, propertyKey, descriptor);
   };
 }
 
 export function Body(target: object, propertyKey: string, index: number) {
-  Reflect.defineMetadata(
-    BODY_PARAM_INDEX,
-    index,
-    target,
-    propertyKey
-  );
+  Reflect.defineMetadata(BODY_PARAM_INDEX, index, target, propertyKey);
 }

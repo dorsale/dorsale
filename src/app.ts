@@ -2,7 +2,9 @@ import Fastify, { FastifyInstance, RouteOptions } from "fastify";
 import fg from "fast-glob";
 import {
   BODY_PARAM_INDEX,
+  CONTROLLER_ROUTES,
   DorsalOptions,
+  ENDPOINT_PARAMS,
   fileToAst,
   isController,
   QUERY_PARAM_INDEXES,
@@ -26,16 +28,15 @@ export async function mountApp(options: DorsalOptions) {
       const controller = imported[controllerName];
       // @ts-ignore
       const instance = new controller();
-      // await fastify.register(instance.plugin)
       controllers.set(controllerName, instance);
       const routes: RouteEntry[] = Reflect.getOwnMetadata(
-        "routes",
+        CONTROLLER_ROUTES,
         controller.prototype
       );
       const plugin = async function (fastify, opts) {
         for (const route of routes) {
           const params = Reflect.getOwnMetadata(
-            "params",
+            ENDPOINT_PARAMS,
             controller.prototype,
             route.mapTo.method
           );
@@ -73,7 +74,7 @@ export async function mountApp(options: DorsalOptions) {
           } as RouteOptions);
         }
       };
-      fastify.register(plugin);
+      fastify.register(plugin, { prefix: instance.prefix ?? "" });
     }
   }
 
