@@ -15,6 +15,7 @@
     "build": "tsc --project tsconfig.prod.json",
     "debug": "tsx test/debug.ts",
     "test": "mocha --exit",
+    "test:ci": "mocha --reporter mocha-junit-reporter --reporter-options mochaFile=./.test-results/test-results.xml",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "lint": "eslint --ext .ts src test"
   },

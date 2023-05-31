@@ -10,9 +10,7 @@ jobs:
       - run: mkdir ~/.test-results
       - run:
           name: Run tests
-          command: mocha --reporter mocha-junit-reporter
-          environment:
-            MOCHA_FILE: ~/.test-results/results.xml
+          command: npm run test:ci
       - store_test_results:
           path: ~/.test-results
 
