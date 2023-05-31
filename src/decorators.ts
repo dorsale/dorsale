@@ -1,50 +1,164 @@
 import * as acorn from "acorn";
 import "reflect-metadata";
+import {
+  BODY_PARAM_INDEX,
+  CONTROLLER_PREFIX,
+  CONTROLLER_ROUTES,
+  ENDPOINT_PARAMS,
+  HttpMethod,
+  QUERY_PARAM_INDEXES,
+  RouteEntry
+} from "./util";
 
-export function Controller(target: Function) {
-  console.log("hi from controller decorator", target);
+/**
+ * Decorator for controller classes
+ * @param prefix - prefix for all endpoints in this controller
+ * @constructor
+ */
+export function Controller(prefix?: string) {
+  return (target: Function) => {
+    if (prefix) {
+      Reflect.defineProperty(target, CONTROLLER_PREFIX, { value: prefix });
+    }
+  };
 }
 
-export function Query(target: Object, propertyKey: string, index: number) {
-  const queryParamNames = Reflect.getOwnMetadata("queryParamNames", target, propertyKey) || [];
-  queryParamNames.push(index);
-  Reflect.defineMetadata("queryParamNames", queryParamNames, target, propertyKey);
-  console.log("hi from query decorator");
-  console.log(target);
-  console.log(propertyKey);
-  console.log(index);
+/**
+ * Decorator for query parameters
+ * @param target - target object (the controller)
+ * @param propertyKey - name of the method
+ * @param index - index of the parameter in the method declaration
+ * @constructor
+ */
+export function Query(target: object, propertyKey: string, index: number) {
+  const queryParamIndexes =
+    Reflect.getOwnMetadata(QUERY_PARAM_INDEXES, target, propertyKey) || [];
+  queryParamIndexes.push(index);
+  Reflect.defineMetadata(
+    QUERY_PARAM_INDEXES,
+    queryParamIndexes,
+    target,
+    propertyKey
+  );
 }
 
+/**
+ * Adds an endpoint to the controller metadata
+ * @param method - HTTP method
+ * @param url - url for the endpoint
+ * @param target - target object (the controller)
+ * @param propertyKey - name of the method
+ * @param descriptor - the method descriptor
+ */
+function addEndpoint(
+  method: HttpMethod,
+  url: string,
+  target: object,
+  propertyKey: string,
+  descriptor: PropertyDescriptor
+) {
+  const routes: RouteEntry[] =
+    Reflect.getOwnMetadata(CONTROLLER_ROUTES, target) || [];
+  const methodAst = acorn.parseExpressionAt(descriptor.value.toString(), 0, {
+    ecmaVersion: 2020,
+  });
+  // @ts-ignore
+  const params = methodAst.arguments.map((param) => param.name);
+  Reflect.defineMetadata(ENDPOINT_PARAMS, params, target, propertyKey);
+  routes.push({
+    url,
+    method: method.toString(),
+    mapTo: {
+      // @ts-ignore
+      controller: target.constructor.name,
+      method: propertyKey,
+    },
+  });
+  Reflect.defineMetadata(CONTROLLER_ROUTES, routes, target);
+}
+
+/**
+ * Decorator for GET endpoints
+ * @param url - url for the endpoint
+ * @constructor
+ */
 export function Get(url: string) {
-  return function(
-    target: Object,
+  return function (
+    target: object,
     propertyKey: string,
     descriptor: PropertyDescriptor
   ) {
-    console.log("hi from get decorator");
-    console.log(descriptor.value.toString());
-    const methodAst = acorn.parseExpressionAt(descriptor.value.toString(), 0, { ecmaVersion: 2020 });
-    console.log(methodAst);
-    // @ts-ignore
-    const params = methodAst.arguments.map((param) => param.name);
-    console.log(params);
-    const queryParamIndexes = Reflect.getOwnMetadata("queryParamNames", target, propertyKey) || [];
-    console.log(`queryParamIndexes: ${queryParamIndexes}`);
-    global["$$fastify"].get(
-      url,
-      (request) => {
-        const args = params.map((param, index) => {
-          if (queryParamIndexes.includes(index)) {
-            console.log(`${param} is a query param`);
-            console.log(`request.query[${param}]: ${request.query[param]}`);
-            return request.query[param];
-          } else {
-            console.log(`${param} is a route param`);
-            return request.params[param];
-          }
-        });
-        return descriptor.value.call(target, ...args);
-      }
-    );
+    addEndpoint(HttpMethod.GET, url, target, propertyKey, descriptor);
   };
+}
+
+/**
+ * Decorator for POST endpoints
+ * @param url - url for the endpoint
+ * @constructor
+ */
+export function Post(url: string) {
+  return function (
+    target: object,
+    propertyKey: string,
+    descriptor: PropertyDescriptor
+  ) {
+    addEndpoint(HttpMethod.POST, url, target, propertyKey, descriptor);
+  };
+}
+
+/**
+ * Decorator for PUT endpoints
+ * @param url - url for the endpoint
+ * @constructor
+ */
+export function Put(url: string) {
+  return function (
+    target: object,
+    propertyKey: string,
+    descriptor: PropertyDescriptor
+  ) {
+    addEndpoint(HttpMethod.PUT, url, target, propertyKey, descriptor);
+  };
+}
+
+/**
+ * Decorator for PATCH endpoints
+ * @param url - url for the endpoint
+ * @constructor
+ */
+export function Patch(url: string) {
+  return function (
+    target: object,
+    propertyKey: string,
+    descriptor: PropertyDescriptor
+  ) {
+    addEndpoint(HttpMethod.PATCH, url, target, propertyKey, descriptor);
+  };
+}
+
+/**
+ * Decorator for DELETE endpoints
+ * @param url - url for the endpoint
+ * @constructor
+ */
+export function Delete(url: string) {
+  return function (
+    target: object,
+    propertyKey: string,
+    descriptor: PropertyDescriptor
+  ) {
+    addEndpoint(HttpMethod.DELETE, url, target, propertyKey, descriptor);
+  };
+}
+
+/**
+ * Decorator for body parameters
+ * @param target - target object (the controller)
+ * @param propertyKey - name of the method
+ * @param index - index of the parameter in the method declaration
+ * @constructor
+ */
+export function Body(target: object, propertyKey: string, index: number) {
+  Reflect.defineMetadata(BODY_PARAM_INDEX, index, target, propertyKey);
 }

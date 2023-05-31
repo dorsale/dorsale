@@ -4,14 +4,13 @@
     "module": "esnext",
     "moduleResolution": "node",
     "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
     "experimentalDecorators": true,
     "forceConsistentCasingInFileNames": true,
     "strict": true,
     "noImplicitAny": false,
     "skipLibCheck": true,
-    "outDir": "dist"
-  },
-  "include": [
-    "/**/*.ts"
-  ]
+    "outDir": "dist",
+    "declaration": true
+  }
 }
