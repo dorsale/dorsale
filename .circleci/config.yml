@@ -7,12 +7,12 @@ jobs:
     steps:
       - checkout
       - run: npm ci
-      - run: mkdir ~/.test-results
+      - run: mkdir ./.test-results
       - run:
           name: Run tests
           command: npm run test:ci
       - store_test_results:
-          path: ~/.test-results
+          path: ./.test-results
 
 workflows:
   test-workflow:
