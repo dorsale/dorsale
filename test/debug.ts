@@ -1,5 +1,5 @@
-import { dorsal } from "../src";
+import { dorsale } from "../src";
 
-dorsal({
+dorsale({
   currentDir: process.cwd() + "/test/all-methods-controller",
 }).then();

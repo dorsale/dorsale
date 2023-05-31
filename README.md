@@ -1,2 +1,3 @@
-# dorsal
-Dorsal is an attempt at creating a TS equivalent of Spring for Java
+# dorsale
+
+Dorsale is an attempt at creating a TS equivalent of Spring for Java
