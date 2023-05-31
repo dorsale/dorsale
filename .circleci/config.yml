@@ -39,7 +39,7 @@ jobs:
             npm publish
 
 workflows:
-  test-workflow:
+  workflow:
     jobs:
       - test
       - build:
