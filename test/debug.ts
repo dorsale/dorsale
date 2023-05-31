@@ -1,5 +1,5 @@
 import { dorsale } from "../src";
 
 dorsale({
-  currentDir: process.cwd() + "/test/all-methods-controller",
+  rootDir: process.cwd() + "/test/two-tiers-app",
 }).then();
