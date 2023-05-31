@@ -1,5 +1,5 @@
 {
-  "name": "@dj256/dorsal",
+  "name": "dorsal",
   "version": "0.0.1",
   "description": "Dorsal is an attempt at creating a TS equivalent of Spring",
   "type": "module",
