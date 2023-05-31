@@ -13,8 +13,8 @@ import {
 import path from "path";
 
 /**
- * Mounts the dorsal application
- * @param options the dorsal options
+ * Mounts the dorsale application
+ * @param options the dorsale options
  */
 export async function mountApp(options: DorsalOptions) {
   const currentDir = options.currentDir || process.cwd() + "/src";
@@ -40,7 +40,7 @@ export async function mountApp(options: DorsalOptions) {
 }
 
 /**
- * Adds a controller to the dorsal application
+ * Adds a controller to the dorsale application
  * @param filename the path to the controller file
  * @param controllerName the name of the controller class
  */
@@ -63,7 +63,7 @@ async function addController(filename: string, controllerName: string) {
 }
 
 /**
- * Adds a route to the dorsal application
+ * Adds a route to the dorsale application
  * @param route the route entry to add
  * @param controller the controller class
  * @param instance the controller instance
