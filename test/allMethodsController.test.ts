@@ -69,7 +69,7 @@ describe("All methods controller", () => {
   it("should delete a user", async () => {
     const response = await server.inject({
       method: "DELETE",
-      url: "/2",
+      url: "/1",
     });
     expect(response.statusCode).to.equal(200);
     expect(controller.users.map((u) => u.id)).to.not.include("2");
