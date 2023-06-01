@@ -1,2 +1,2 @@
 export { dorsale } from "./dorsale";
-export { Controller, Get, Query } from "./decorators";
+export * from "./decorators";

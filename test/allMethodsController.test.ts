@@ -8,10 +8,10 @@ describe("All methods controller", () => {
 
   before(async () => {
     const app = await mountApp({
-      currentDir: process.cwd() + "/test/all-methods-controller",
+      rootDir: process.cwd() + "/test/all-methods-controller",
     });
     server = app.server;
-    controller = app.controllers.get(
+    controller = app.runtimes.get(
       "AllMethodsController"
     ) as unknown as AllMethodsController;
   });

@@ -162,3 +162,7 @@ export function Delete(url: string) {
 export function Body(target: object, propertyKey: string, index: number) {
   Reflect.defineMetadata(BODY_PARAM_INDEX, index, target, propertyKey);
 }
+
+export function Component(target: Function) {
+  Reflect.defineMetadata("component", true, target);
+}

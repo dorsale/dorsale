@@ -4,7 +4,7 @@ import { mountApp } from "../src/app";
 describe("simple controller", () => {
   it("should respond to GET request", () =>
     mountApp({
-      currentDir: process.cwd() + "/test/simple-controller",
+      rootDir: process.cwd() + "/test/simple-controller",
     })
       .then((app) => {
         const server = app.server;
