@@ -1,7 +1,7 @@
 import { expect } from "chai";
 import { mountApp } from "../src/app";
 
-describe("simple controller", () => {
+describe("Simple controller", () => {
   it("should respond to GET request", () =>
     mountApp({
       rootDir: process.cwd() + "/test/simple-controller",

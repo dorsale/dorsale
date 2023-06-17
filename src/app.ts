@@ -3,9 +3,8 @@ import fg from "fast-glob";
 import {
   BODY_PARAM_INDEX,
   CONTROLLER_ROUTES,
-  DorsaleDependency,
   DorsaleElement,
-  DorsaleSymbol,
+  DorsaleElementType,
   DorsalOptions,
   ENDPOINT_PARAMS,
   fileToAst,
@@ -21,72 +20,119 @@ import { walk } from "estree-walker";
  * Mounts the dorsale application
  * @param options the dorsale options
  */
-export async function mountApp(options: DorsalOptions) {
+export async function mountApp(
+  options: DorsalOptions
+) {
   const fastify: FastifyInstance = Fastify({ logger: true });
   const rootDir = options.rootDir || process.cwd() + "/src";
   const runtimes = new Map<string, object>();
-  const { symbols, dependencies, implementations } = await buildGraph(rootDir);
-  const dependenciesNames = Array.from(dependencies.keys()).sort(
-    (a, b) => dependencies.get(a)!.length - dependencies.get(b)!.length
+  const { elements, implementations } = await buildGraph(rootDir);
+  resolveDependencies(
+    elements,
+    runtimes,
+    implementations,
+    fastify
   );
-  for (const name of dependenciesNames) {
-    const deps = dependencies.get(name)!;
-    while (deps.filter((d) => !d.resolved).length > 0) {
-      const dep = deps.find((d) => !d.resolved)!;
-      if (
-        !runtimes.has(dep.name) &&
-        !(
-          implementations.has(dep.name) &&
-          runtimes.has(implementations.get(dep.name)!)
-        )
-      ) {
-        throw new Error(`Missing dependency ${dep.name} for ${name}`);
-      }
-      dep.resolved = true;
-    }
-    const args =
-      deps.map(
-        (dep) =>
-          runtimes.get(dep.name) ??
-          runtimes.get(implementations.get(dep.name)!)!
-      ) || [];
-    const instance = new (symbols.get(name)!.constructor as any)(...args);
-    runtimes.set(name, instance);
-  }
 
-  for (let [name, element] of symbols.entries()) {
-    if (element.type === DorsaleElement.CONTROLLER) {
-      const instance = runtimes.get(name)! as any;
-      const { plugin } = addController(element.constructor, instance);
-      fastify.register(plugin, { prefix: instance.prefix ?? "" });
-    }
-  }
   return { server: fastify, runtimes };
 }
 
 async function buildGraph(rootDir) {
   // global["$$fastify"] = fastify;
   const files = fg.sync(["**/*.ts"], { cwd: rootDir });
-  const symbols = new Map<string, DorsaleSymbol>();
-  const dependencies = new Map<string, DorsaleDependency[]>();
+  const elements = new Map<string, DorsaleElement>();
   const implementations = new Map<string, string>();
   for (const file of files) {
     const filename = path.join(rootDir, file);
     const ast = fileToAst(filename);
     const res = parseDorsaleElement(ast);
     if (res) {
-      const { name, constructor } = await extractElement(filename, res.name);
-      symbols.set(name, { type: res.type, constructor });
-      dependencies.set(
+      const { name, constructor } = await importElement(filename, res.name);
+      elements.set(name, {
         name,
-        res.dependsOn.map((dep) => ({ name: dep, resolved: false }))
-      );
+        type: res.type,
+        constructor,
+        dependencies: res.dependsOn,
+      });
       res.implemented.forEach((implemented) => {
         implementations.set(implemented, name);
       });
     }
   }
-  return { symbols, dependencies, implementations };
+  return { elements, implementations };
+}
+
+function resolveDependencies(
+  elements: Map<string, DorsaleElement>,
+  runtimes: Map<string, object>,
+  implementations: Map<string, string>,
+  server: FastifyInstance
+) {
+  while (elements.size > 0) {
+    const elementName = getFirstElementWithNoDependency(
+      elements.keys().next().value
+    );
+    mountElement(elementName, elements, runtimes, implementations, server);
+    removeElement(elementName);
+  }
+
+  function getFirstElementWithNoDependency(start: string) {
+    const dependencies = elements.get(start)?.dependencies ?? [];
+    if (dependencies.length === 0) {
+      return start;
+    } else {
+      return getFirstElementWithNoDependency(dependencies[0]);
+    }
+  }
+
+  function removeElement(elementName: string) {
+    elements.delete(elementName);
+    for (const element of elements.values()) {
+      element.dependencies = element.dependencies.filter(
+        (dep) => dep !== elementName
+      );
+    }
+  }
+}
+
+function mountElement(
+  elementName: string,
+  elements: Map<string, DorsaleElement>,
+  runtimes: Map<string, object>,
+  implementations: Map<string, string>,
+  server: FastifyInstance
+) {
+  const element = elements.get(elementName)!;
+  switch (element.type) {
+    case DorsaleElementType.CONTROLLER: {
+      const instance = new (element.constructor as any)(
+        ...element.dependencies.map((dep) => runtimes.get(dep))
+      );
+      const routes: RouteEntry[] = Reflect.getOwnMetadata(
+        CONTROLLER_ROUTES,
+        element.constructor.prototype
+      );
+      const plugin = async function (fastify: FastifyInstance) {
+        for (const route of routes) {
+          const routeOptions = addRoute(route, element.constructor, instance);
+          fastify.route(routeOptions);
+        }
+      };
+      server.register(plugin, { prefix: instance.prefix ?? "" });
+      runtimes.set(elementName, instance);
+      break;
+    }
+    case DorsaleElementType.COMPONENT:
+    case DorsaleElementType.REPOSITORY: {
+      const instance = new (element.constructor as any)(
+        ...element.dependencies.map((dep) => runtimes.get(dep))
+      );
+      runtimes.set(elementName, instance);
+      break;
+    }
+    case DorsaleElementType.DAO:
+      break;
+  }
 }
 
 export function parseDorsaleElement(fileAst: Node): ParseResult | undefined {
@@ -97,13 +143,13 @@ export function parseDorsaleElement(fileAst: Node): ParseResult | undefined {
       if (node.type === "ClassDeclaration") {
         // @ts-ignore
         node.decorators?.forEach((d) => {
-          for (let e in DorsaleElement) {
+          for (let e in DorsaleElementType) {
             if (
               (d.expression.name ?? d.expression.callee.name) ===
-              DorsaleElement[e]
+              DorsaleElementType[e]
             ) {
               res.name = node!.id!.name;
-              res.type = DorsaleElement[e];
+              res.type = DorsaleElementType[e];
             }
           }
         });
@@ -123,8 +169,8 @@ export function parseDorsaleElement(fileAst: Node): ParseResult | undefined {
               res.dependsOn.push(param.name);
               // @ts-ignore
             } else if (param.type === "TSParameterProperty") {
-              // @ts-ignore
               res.dependsOn.push(
+                // @ts-ignore
                 param.parameter.typeAnnotation.typeAnnotation.typeName.name
               );
             }
@@ -142,20 +188,6 @@ export function parseDorsaleElement(fileAst: Node): ParseResult | undefined {
     return res;
   }
   return undefined;
-}
-
-function addController(controllerConstructor: Function, instance: object) {
-  const routes: RouteEntry[] = Reflect.getOwnMetadata(
-    CONTROLLER_ROUTES,
-    controllerConstructor.prototype
-  );
-  const plugin = async function (fastify: FastifyInstance) {
-    for (const route of routes) {
-      const routeOptions = addRoute(route, controllerConstructor, instance);
-      fastify.route(routeOptions);
-    }
-  };
-  return { plugin, instance };
 }
 
 /**
@@ -201,7 +233,7 @@ function addRoute(route: RouteEntry, constructor: Function, instance: object) {
   } as RouteOptions;
 }
 
-async function extractElement(filename: string, name: string) {
+async function importElement(filename: string, name: string) {
   const imported = await import(filename);
   const constructor = imported[name];
   return { name, constructor };

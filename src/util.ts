@@ -10,9 +10,11 @@ export function fileToAst(filename: string) {
   }) as Node;
 }
 
-export enum DorsaleElement {
+export enum DorsaleElementType {
   CONTROLLER = "Controller",
   COMPONENT = "Component",
+  REPOSITORY = "Repository",
+  DAO = "Dao",
 }
 
 export type DorsalOptions = {
@@ -37,10 +39,12 @@ export enum HttpMethod {
   DELETE = "DELETE",
 }
 
-export type DorsaleSymbol = {
-  type: DorsaleElement;
+export interface DorsaleElement {
+  name: string;
+  type: DorsaleElementType;
   constructor: Function;
-};
+  dependencies: string[]
+}
 
 export type DorsaleDependency = {
   name: string;
@@ -49,7 +53,7 @@ export type DorsaleDependency = {
 
 export type ParseResult = {
   name: string;
-  type: DorsaleElement;
+  type: DorsaleElementType;
   dependsOn: string[];
   implemented: string[];
 };
