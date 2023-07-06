@@ -10,7 +10,7 @@ import {
   fileToAst,
   ParseResult,
   QUERY_PARAM_INDEXES,
-  RouteEntry
+  RouteEntry,
 } from "./util";
 import path from "path";
 import { Node } from "estree";
@@ -20,19 +20,20 @@ import { walk } from "estree-walker";
  * Mounts the dorsale application
  * @param options the dorsale options
  */
-export async function mountApp(
-  options: DorsalOptions
-) {
+export async function mountApp(options: DorsalOptions) {
   const fastify: FastifyInstance = Fastify({ logger: true });
   const rootDir = options.rootDir || process.cwd() + "/src";
   const runtimes = new Map<string, object>();
+  console.log("Building graph");
+  let start = Date.now();
   const { elements, implementations } = await buildGraph(rootDir);
-  resolveDependencies(
-    elements,
-    runtimes,
-    implementations,
-    fastify
-  );
+  const buildGraphTime = Date.now() - start;
+  console.log("Graph built in", buildGraphTime, "ms");
+  console.log("Resolving dependencies");
+  start = Date.now();
+  resolveDependencies(elements, runtimes, implementations, fastify);
+  const resolveDependenciesTime = Date.now() - start;
+  console.log("Dependencies resolved in", resolveDependenciesTime, "ms");
 
   return { server: fastify, runtimes };
 }
@@ -68,6 +69,7 @@ function resolveDependencies(
   implementations: Map<string, string>,
   server: FastifyInstance
 ) {
+  const ok = new Set<string>();
   while (elements.size > 0) {
     const elementName = getFirstElementWithNoDependency(
       elements.keys().next().value
@@ -78,7 +80,7 @@ function resolveDependencies(
 
   function getFirstElementWithNoDependency(start: string) {
     const dependencies = elements.get(start)?.dependencies ?? [];
-    if (dependencies.length === 0) {
+    if (dependencies.length === 0 || dependencies.every((dep) => ok.has(dep))) {
       return start;
     } else {
       return getFirstElementWithNoDependency(dependencies[0]);
@@ -87,11 +89,7 @@ function resolveDependencies(
 
   function removeElement(elementName: string) {
     elements.delete(elementName);
-    for (const element of elements.values()) {
-      element.dependencies = element.dependencies.filter(
-        (dep) => dep !== elementName
-      );
-    }
+    ok.add(elementName);
   }
 }
 
@@ -102,7 +100,10 @@ function mountElement(
   implementations: Map<string, string>,
   server: FastifyInstance
 ) {
-  const element = elements.get(elementName)!;
+  const element =
+    elements.get(elementName) ??
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    elements.get(implementations.get(elementName)!)!;
   switch (element.type) {
     case DorsaleElementType.CONTROLLER: {
       const instance = new (element.constructor as any)(
@@ -136,19 +137,19 @@ function mountElement(
 }
 
 export function parseDorsaleElement(fileAst: Node): ParseResult | undefined {
-  let res: any = { dependsOn: [], implemented: [] };
+  const res: any = { dependsOn: [], implemented: [] };
   let isInsideClassDeclaration = false;
   walk(fileAst, {
     enter(node) {
       if (node.type === "ClassDeclaration") {
         // @ts-ignore
         node.decorators?.forEach((d) => {
-          for (let e in DorsaleElementType) {
+          for (const e in DorsaleElementType) {
             if (
               (d.expression.name ?? d.expression.callee.name) ===
               DorsaleElementType[e]
             ) {
-              res.name = node!.id!.name;
+              res.name = node?.id?.name;
               res.type = DorsaleElementType[e];
             }
           }

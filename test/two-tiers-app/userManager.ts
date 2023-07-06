@@ -12,6 +12,12 @@ export class UserManager implements UserFinder, UserEditor {
       email: "john@doe.com",
       password: "123456",
     },
+    {
+      id: "2",
+      name: "Jake Johnson",
+      email: "jake@johnson.com",
+      password: "543321",
+    },
   ];
 
   createUser(name: string, email: string, password: string): Promise<string> {
