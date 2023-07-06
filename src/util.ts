@@ -1,5 +1,4 @@
 import { Node } from "estree";
-import { walk } from "estree-walker";
 import fs from "fs";
 import { parse } from "@typescript-eslint/typescript-estree";
 
@@ -11,26 +10,15 @@ export function fileToAst(filename: string) {
   }) as Node;
 }
 
-export function isController(fileAst: Node) {
-  let res: string | undefined = undefined;
-  walk(fileAst, {
-    enter(node) {
-      if (node.type === "ClassDeclaration") {
-        // @ts-ignore
-        node.decorators?.forEach((d) => {
-          if (d.expression.callee.name === "Controller") {
-            res = node?.id?.name;
-            this.skip();
-          }
-        });
-      }
-    },
-  });
-  return res;
+export enum DorsaleElementType {
+  CONTROLLER = "Controller",
+  COMPONENT = "Component",
+  REPOSITORY = "Repository",
+  DAO = "Dao",
 }
 
 export type DorsalOptions = {
-  currentDir?: string;
+  rootDir?: string;
   port?: number;
 };
 
@@ -50,6 +38,25 @@ export enum HttpMethod {
   PATCH = "PATCH",
   DELETE = "DELETE",
 }
+
+export interface DorsaleElement {
+  name: string;
+  type: DorsaleElementType;
+  constructor: Function;
+  dependencies: string[]
+}
+
+export type DorsaleDependency = {
+  name: string;
+  resolved: boolean;
+};
+
+export type ParseResult = {
+  name: string;
+  type: DorsaleElementType;
+  dependsOn: string[];
+  implemented: string[];
+};
 
 export const QUERY_PARAM_INDEXES = "queryParamIndexes";
 export const BODY_PARAM_INDEX = "bodyParamIndex";
