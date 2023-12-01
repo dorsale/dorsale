@@ -1,6 +1,6 @@
 {
   "name": "dorsale",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "Dorsale is an attempt at creating a TS equivalent of Spring",
   "type": "module",
   "main": "dist/index.js",
