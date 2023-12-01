@@ -38,7 +38,7 @@ export async function mountApp(options: DorsalOptions) {
   return { server: fastify, runtimes };
 }
 
-async function buildGraph(rootDir) {
+async function buildGraph(rootDir: string) {
   // global["$$fastify"] = fastify;
   const files = fg.sync(["**/*.ts"], { cwd: rootDir });
   const elements = new Map<string, DorsaleElement>();

@@ -28,7 +28,8 @@ jobs:
     docker:
       - image: cimg/node:20.2.0
     steps:
-      - checkout
+      - attach_workspace:
+          at: .
       - run: npm run build
       - persist_to_workspace:
           root: .
