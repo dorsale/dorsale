@@ -17,7 +17,7 @@ export enum DorsaleElementType {
   DAO = "Dao",
 }
 
-export type DorsalOptions = {
+export type DorsaleOptions = {
   rootDir?: string;
   port?: number;
 };

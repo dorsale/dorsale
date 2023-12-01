@@ -5,7 +5,7 @@ import {
   CONTROLLER_ROUTES,
   DorsaleElement,
   DorsaleElementType,
-  DorsalOptions,
+  DorsaleOptions,
   ENDPOINT_PARAMS,
   fileToAst,
   ParseResult,
@@ -20,16 +20,14 @@ import { walk } from "estree-walker";
  * Mounts the dorsale application
  * @param options the dorsale options
  */
-export async function mountApp(options: DorsalOptions) {
+export async function mountApp(options: DorsaleOptions) {
   const fastify: FastifyInstance = Fastify({ logger: true });
   const rootDir = options.rootDir || process.cwd() + "/src";
   const runtimes = new Map<string, object>();
-  console.log("Building graph");
   let start = Date.now();
   const { elements, implementations } = await buildGraph(rootDir);
   const buildGraphTime = Date.now() - start;
   console.log("Graph built in", buildGraphTime, "ms");
-  console.log("Resolving dependencies");
   start = Date.now();
   resolveDependencies(elements, runtimes, implementations, fastify);
   const resolveDependenciesTime = Date.now() - start;
