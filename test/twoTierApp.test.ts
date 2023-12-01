@@ -1,14 +1,12 @@
-import { mountApp } from "../src/app";
-import { expect } from "chai";
+import {mountApp} from "../src/app";
+import {expect} from "chai";
 
-describe("Two tiers app", () => {
+describe("Two tier app", () => {
   let app;
 
-  before(() => {
-    return mountApp({
-      rootDir: process.cwd() + "/test/two-tiers-app",
-    }).then((_app) => {
-      app = _app;
+  before(async () => {
+    app = await mountApp({
+      rootDir: process.cwd() + "/test/two-tier-app",
     });
   });
 
