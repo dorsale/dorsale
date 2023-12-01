@@ -1,7 +1,11 @@
 {
   "name": "dorsale",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "Dorsale is an attempt at creating a TS equivalent of Spring",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/dj-256/dorsale.git"
+  },
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
