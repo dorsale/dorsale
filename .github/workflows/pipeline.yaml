@@ -39,6 +39,11 @@ jobs:
         with:
           minor-wording: 'MINOR'
           major-wording: 'MAJOR'
+          commit-message: |+
+            CI: bumps version to {{version}}
+            
+            
+            skip-checks: true
       - if: github.actor == 'dependabot[bot]'
         name: Enable auto-merge 🍾
         run: gh pr merge --auto --merge "$PR_URL"
