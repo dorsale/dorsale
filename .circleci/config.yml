@@ -6,7 +6,15 @@ jobs:
       - image: cimg/node:20.2.0
     steps:
       - checkout
+      - restore_cache:
+          keys:
+            - v1-dependencies-{{ checksum  "package-lock.json" }}
+            - v1-dependencies-
       - run: npm ci
+      - save_cache:
+          paths:
+            - node_modules
+          key: v1-dependencies-{{ checksum  "package-lock.json" }}
       - run: mkdir ./.test-results
       - run:
           name: Run tests
@@ -16,6 +24,7 @@ jobs:
       - persist_to_workspace:
           root: .
           paths:
+            - .git
             - src
             - node_modules
             - package.json
@@ -38,6 +47,26 @@ jobs:
             - package.json
             - README.md
             - LICENSE
+  get-bump-type:
+    docker:
+      - image: cimg/node:20.2.0
+    steps:
+      - attach_workspace:
+          at: .
+      - run: echo "export BUMP_TYPE=$(git log -1 --pretty=%B | grep -Eo '\[(major|minor|patch)\]$' |  sed 's/[][]//g')" >> $BASH_ENV
+      - run: echo 'export BUMP_TYPE="${BUMP_TYPE:-patch}"' >> $BASH_ENV
+      - run: echo ${BUMP_TYPE}
+  bump-version:
+    docker:
+      - image: cimg/node:20.2.0
+    steps:
+      - attach_workspace:
+          at: .
+      - run:
+          name: Bump version
+          command: |
+            npm version ${BUMP_TYPE}
+            git push --follow-tags
   publish:
     docker:
       - image: cimg/node:20.2.0
@@ -54,6 +83,12 @@ workflows:
   workflow:
     jobs:
       - test
+      - get-bump-type:
+          requires:
+            - test
+          filters:
+            branches:
+              only: main
       - build:
           requires:
             - test
