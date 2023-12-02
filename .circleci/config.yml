@@ -76,6 +76,7 @@ workflows:
   workflow:
     jobs:
       - test
+      - get-bump-type
       - build:
           requires:
             - test
