@@ -5,10 +5,10 @@ jobs:
     docker:
       - image: cimg/node:20.2.0
     environment:
-      CIRCLE_COMMIT_MESSAGE: << pipeline.trigger_parameters.github_app.commit_message >>
+      GIT_COMMIT_DESC: git log --format=oneline -n 1 $CIRCLE_SHA1
     steps:
       - checkout
-      - run: echo $CIRCLE_COMMIT_MESSAGE
+      - run: echo $GIT_COMMIT_DESC
       - run: npm ci
       - run: mkdir ./.test-results
       - run:
