@@ -21,6 +21,21 @@ jobs:
         run: npm ci
       - name: Run tests 🧪
         run: npm run test
+  check-version-change:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - id: check
+        name: Check for version change 📝
+        uses: EndBug/version-check@v2
+      - name: Get the output
+        run: echo "The output was ${{ steps.check.outputs.changed }}"
+      - name: Fail if no version change
+        run: |
+          if [ "${{ steps.check.outputs.changed }}" != "true" ]; then
+            echo "No version change detected, failing..."
+            exit 1
+          fi
   build:
     if: github.event_name == 'push'
     needs: test
@@ -35,24 +50,9 @@ jobs:
         run: npm ci
       - name: Build 🏗
         run: npm run build
-  bump-version:
-    permissions:
-      contents: write
-    if: github.event_name == 'push'
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - uses: phips28/gh-action-bump-version@master
-        name: Automated Version Bump 🚀
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          minor-wording: 'MINOR'
-          major-wording: 'MAJOR'
   publish:
     if: github.event_name == 'push'
-    needs: bump-version
+    needs: build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
