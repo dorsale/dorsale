@@ -48,10 +48,11 @@ jobs:
           node-version: 20
           cache: 'npm'
           registry-url: 'https://registry.npmjs.org'
-          token: ${{ secrets.NPM_TOKEN }}
       - name: Install dependencies 💿
         run: npm ci
       - name: Build 🏗
         run: npm run build
+      - name: Authenticate with NPM 🔑
+        run: echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > ~/.npmrc
       - name: Publish to NPM 📦
         run: npm publish
