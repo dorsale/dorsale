@@ -1,6 +1,6 @@
 {
   "name": "dorsale",
-  "version": "0.0.10",
+  "version": "0.0.11",
   "description": "Dorsale is an attempt at creating a TS equivalent of Spring",
   "repository": {
     "type": "git",
