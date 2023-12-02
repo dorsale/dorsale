@@ -86,6 +86,9 @@ workflows:
       - get-bump-type:
           requires:
             - test
+          filters:
+            branches:
+              only: main
       - build:
           requires:
             - test
