@@ -4,8 +4,11 @@ jobs:
   test:
     docker:
       - image: cimg/node:20.2.0
+    environment:
+      CIRCLE_COMMIT_MESSAGE: << pipeline.trigger_parameters.github_app.commit_message >>
     steps:
       - checkout
+      - run: echo $CIRCLE_COMMIT_MESSAGE
       - run: npm ci
       - run: mkdir ./.test-results
       - run:
@@ -41,12 +44,9 @@ jobs:
   publish:
     docker:
       - image: cimg/node:20.2.0
-    environment:
-      COMMIT_MESSAGE: << pipeline.trigger_parameters.github_app.commit_message >>
     steps:
       - attach_workspace:
           at: .
-      - run: echo $COMMIT_MESSAGE
       - run:
           name: Publish to NPM
           command: |
