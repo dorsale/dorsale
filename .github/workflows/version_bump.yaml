@@ -1,0 +1,11 @@
+name: Dependabot version bump
+on: pull_request
+
+jobs:
+  version-bump:
+    runs-on: ubuntu-latest
+    if: github.actor == 'dependabot[bot]'
+    steps:
+      - uses: actions/checkout@v2
+      - name: Dependabot version bump 👊
+        uses: phips28/gh-action-bump-version@master
