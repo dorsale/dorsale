@@ -63,10 +63,13 @@ jobs:
       - attach_workspace:
           at: .
       - run:
+          name: Avoid hosts unknown for github
+          command: mkdir ~/.ssh/ && echo -e "Host github.com\n\tStrictHostKeyChecking no\n" > ~/.ssh/config
+      - run:
           name: Bump version
           command: |
+            echo ${BUMP_TYPE}
             npm version ${BUMP_TYPE}
-            ssh-keyscan github.com >> ~/.ssh/known_hosts
             git push --follow-tags
   publish:
     docker:
