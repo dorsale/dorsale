@@ -13,11 +13,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: Cache NPM 🙈
-        uses: actions/cache@v3
+      - uses: actions/setup-node@v4
         with:
-          path: ~/.npm
-          key: test-cache-${{ hashFiles('package-lock.json') }}
+          node-version: 20
+          cache: 'npm'
       - name: Install dependencies 💿
         run: npm ci
       - name: Run tests 🧪
@@ -28,6 +27,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+      - name: Install dependencies 💿
+        run: npm ci
       - name: Build 🏗
         run: npm run build
   bump-version:
@@ -37,6 +42,7 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v2
       - uses: phips28/gh-action-bump-version@master
         name: Automated Version Bump 🚀
         env:
