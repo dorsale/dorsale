@@ -4,10 +4,9 @@ jobs:
   test:
     docker:
       - image: cimg/node:20.2.0
-    environment:
-      GIT_COMMIT_DESC: $(git log --format=oneline -n 1 $CIRCLE_SHA1)
     steps:
       - checkout
+      - run: export GIT_COMMIT_DESC=git log --format=oneline -n 1 $CIRCLE_SHA1
       - run: echo $GIT_COMMIT_DESC
       - run: npm ci
       - run: mkdir ./.test-results
