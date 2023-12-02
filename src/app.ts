@@ -24,13 +24,13 @@ export async function mountApp(options: DorsaleOptions) {
   const fastify: FastifyInstance = Fastify({ logger: true });
   const rootDir = options.rootDir || process.cwd() + "/src";
   const runtimes = new Map<string, object>();
-  let start = Date.now();
+  let start = performance.now();
   const { elements, implementations } = await buildGraph(rootDir);
-  const buildGraphTime = Date.now() - start;
+  const buildGraphTime = Math.round(performance.now() - start);
   console.log("Graph built in", buildGraphTime, "ms");
-  start = Date.now();
+  start = performance.now();
   resolveDependencies(elements, runtimes, implementations, fastify);
-  const resolveDependenciesTime = Date.now() - start;
+  const resolveDependenciesTime = Math.round(performance.now() - start);
   console.log("Dependencies resolved in", resolveDependenciesTime, "ms");
 
   return { server: fastify, runtimes };

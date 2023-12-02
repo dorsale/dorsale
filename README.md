@@ -14,10 +14,19 @@ dorsale({port: 8080});
 This will start a server on port 8080. You can then add controllers, services, and repositories to your application.
 
 A full example could look like this:
+```
+src
+├── index.ts
+├── user.ts
+├── userFinder.ts
+├── userManager.ts
+├── userController.ts
+```
+
 ```ts
 // index.ts
 import { dorsale } from 'dorsale';
-dorsace({port: 8080});
+dorsale({port: 8080});
 ```
 
 ```ts
