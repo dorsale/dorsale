@@ -6,7 +6,15 @@ jobs:
       - image: cimg/node:20.2.0
     steps:
       - checkout
+      - restore_cache:
+          keys:
+            - v1-dependencies-{{ checksum  "package-lock.json" }}
+            - v1-dependencies-
       - run: npm ci
+      - save_cache:
+          paths:
+              - node_modules
+          key: v1-dependencies-{{ checksum  "package-lock.json" }}
       - run: mkdir ./.test-results
       - run:
           name: Run tests
@@ -45,11 +53,8 @@ jobs:
     steps:
       - attach_workspace:
           at: .
-      - run:
-          name: Get bump type
-          command: |
-            echo "export BUMP_TYPE=$(git log --format=oneline -n 1 $CIRCLE_SHA1 | grep -Eo '^(major|minor|patch)')" >> $BASH_ENV
-            echo ${BUMP_TYPE}
+      - run: echo "export BUMP_TYPE=$(git log --format=oneline -n 1 $CIRCLE_SHA1 | grep -Eo '^(major|minor|patch)')" >> $BASH_ENV
+      - run: echo ${BUMP_TYPE}
   bump-version:
     docker:
       - image: cimg/node:20.2.0
