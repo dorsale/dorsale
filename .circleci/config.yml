@@ -83,15 +83,22 @@ workflows:
   workflow:
     jobs:
       - test
+      - build:
+          requires:
+            - test
+          filters:
+            branches:
+              only: main
       - get-bump-type:
           requires:
             - test
           filters:
             branches:
               only: main
-      - build:
+      - bump-version:
           requires:
-            - test
+            - build
+            - get-bump-type
           filters:
             branches:
               only: main
