@@ -32,7 +32,7 @@ jobs:
         run: echo "The output was ${{ steps.check.outputs.changed }}"
       - name: Fail if no version change
         run: |
-          if [ "${{ steps.check.outputs.changed }}" = "false" ]; then
+          if [ "${{ steps.check-version-change.outputs.changed }}" != "true" ]; then
             echo "No version change detected, failing..."
             exit 1
           fi
