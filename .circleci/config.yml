@@ -54,6 +54,7 @@ jobs:
       - attach_workspace:
           at: .
       - run: echo "export BUMP_TYPE=$(git log -1 --pretty=%B | grep -Eo '\[(major|minor|patch)\]$' |  sed 's/[][]//g')" >> $BASH_ENV
+      - run: echo 'export BUMP_TYPE="${BUMP_TYPE:-patch}"' >> $BASH_ENV
       - run: echo ${BUMP_TYPE}
   bump-version:
     docker:
@@ -64,7 +65,7 @@ jobs:
       - run:
           name: Bump version
           command: |
-            npm version patch
+            npm version ${BUMP_TYPE}
             git push --follow-tags
   publish:
     docker:
