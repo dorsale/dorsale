@@ -76,7 +76,12 @@ workflows:
   workflow:
     jobs:
       - test
-      - get-bump-type
+      - get-bump-type:
+          requires:
+            - test
+          filters:
+            branches:
+              only: main
       - build:
           requires:
             - test
