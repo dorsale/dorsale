@@ -5,7 +5,7 @@ jobs:
     docker:
       - image: cimg/node:20.2.0
     environment:
-      GIT_COMMIT_DESC: git log --format=oneline -n 1 $CIRCLE_SHA1
+      GIT_COMMIT_DESC: $(git log --format=oneline -n 1 $CIRCLE_SHA1)
     steps:
       - checkout
       - run: echo $GIT_COMMIT_DESC
