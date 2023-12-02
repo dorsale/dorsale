@@ -28,6 +28,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - if: github.actor == 'dependabot[bot]'
+        name: Enable auto-merge 🍾
+        run: gh pr merge --auto --merge "$PR_URL"
+        env:
+          PR_URL: ${{github.event.pull_request.html_url}}
       - id: check
         name: Check for version change 📝
         uses: EndBug/version-check@v2
@@ -44,11 +49,6 @@ jobs:
             
             
             skip-checks: true
-      - if: github.actor == 'dependabot[bot]'
-        name: Enable auto-merge 🍾
-        run: gh pr merge --auto --merge "$PR_URL"
-        env:
-          PR_URL: ${{github.event.pull_request.html_url}}
   build-n-publish:
     if: github.event_name == 'push'
     needs: test
