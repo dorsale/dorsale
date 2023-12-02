@@ -48,8 +48,8 @@ jobs:
       - run:
           name: Get bump type
           command: |
-            echo "BUMP_TYPE=$(git log --format=oneline -n 1 $CIRCLE_SHA1 | grep -Eo '^(major|minor|patch)')" >> $BASH_ENV
-            echo "BUMP_TYPE=$BUMP_TYPE"
+            echo "export BUMP_TYPE=$(git log --format=oneline -n 1 $CIRCLE_SHA1 | grep -Eo '^(major|minor|patch)')" >> $BASH_ENV
+            echo ${BUMP_TYPE}
   bump-version:
     docker:
       - image: cimg/node:20.2.0
