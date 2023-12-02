@@ -31,8 +31,11 @@ jobs:
       - name: Get the output
         run: echo "The output was ${{ steps.check.outputs.changed }}"
       - name: Fail if no version change
-        run: exit 1
-        if: steps.check.outputs.changed == 'false'
+        run: |
+          if [ "${{ steps.check.outputs.changed }}" = "false" ]; then
+            echo "No version change detected, failing..."
+            exit 1
+          fi
   build:
     if: github.event_name == 'push'
     needs: test
