@@ -21,7 +21,9 @@ jobs:
         run: npm ci
       - name: Run tests 🧪
         run: npm run test
-  check-version-change:
+  bump-npm-version:
+    permissions:
+      contents: write
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     steps:
@@ -29,14 +31,24 @@ jobs:
       - id: check
         name: Check for version change 📝
         uses: EndBug/version-check@v2
-      - name: Get the output
+      - name: Get the output 🖨
         run: echo "The output was ${{ steps.check.outputs.changed }}"
-      - name: Fail if no version change
-        run: |
-          if [ "${{ steps.check.outputs.changed }}" != "true" ]; then
-            echo "No version change detected, failing..."
-            exit 1
-          fi
+      - if: github.event_name == 'pull_request' && steps.check.outputs.changed == 'false'
+        name: Dependabot version bump 👊
+        uses: phips28/gh-action-bump-version@master
+        with:
+          minor-wording: 'MINOR'
+          major-wording: 'MAJOR'
+          commit-message: |+
+            CI: bumps version to {{version}}
+            
+            
+            skip-checks: true
+      - if: github.actor == 'dependabot[bot]'
+        name: Enable auto-merge 🍾
+        run: gh pr merge --auto --merge "$PR_URL"
+        env:
+          PR_URL: ${{github.event.pull_request.html_url}}
   build-n-publish:
     if: github.event_name == 'push'
     needs: test
