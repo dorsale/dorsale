@@ -16,6 +16,7 @@ jobs:
       - persist_to_workspace:
           root: .
           paths:
+            - .git
             - src
             - node_modules
             - package.json
