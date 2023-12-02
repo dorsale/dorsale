@@ -6,8 +6,6 @@ jobs:
       - image: cimg/node:20.2.0
     steps:
       - checkout
-      - run: echo 'export GIT_COMMIT_MSG=$(git log --format=oneline -n 1 $CIRCLE_SHA1)' >> $BASH_ENV
-      - run: echo ${GIT_COMMIT_MSG}
       - run: npm ci
       - run: mkdir ./.test-results
       - run:
@@ -40,6 +38,28 @@ jobs:
             - package.json
             - README.md
             - LICENSE
+  get-bump-type:
+    docker:
+      - image: cimg/node:20.2.0
+    steps:
+      - attach_workspace:
+          at: .
+      - run:
+          name: Get bump type
+          command: |
+            echo "BUMP_TYPE=$(git log -1 --pretty=%B | grep -Eo '^(major|minor|patch)')" >> $BASH_ENV
+            echo "BUMP_TYPE=$BUMP_TYPE"
+  bump-version:
+    docker:
+      - image: cimg/node:20.2.0
+    steps:
+      - attach_workspace:
+          at: .
+      - run:
+          name: Bump version
+          command: |
+            npm version patch
+            git push --follow-tags
   publish:
     docker:
       - image: cimg/node:20.2.0
