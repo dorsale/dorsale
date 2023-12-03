@@ -1,10 +1,10 @@
 {
   "name": "dorsale",
   "version": "0.0.16",
-  "description": "Dorsale is an attempt at creating a TS equivalent of Spring",
+  "description": "Dorsale is an attempt at creating a TS equivalent of Java Spring",
   "repository": {
     "type": "git",
-    "url": "https://github.com/dj-256/dorsale.git"
+    "url": "git+https://github.com/dj-256/dorsale.git"
   },
   "type": "module",
   "main": "dist/index.js",
@@ -23,7 +23,17 @@
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "lint": "eslint --ext .ts src test"
   },
-  "keywords": [],
+  "keywords": [
+    "typescript",
+    "framework",
+    "backend",
+    "dependency injection",
+    "inversion of control",
+    "api",
+    "rest",
+    "lightweight",
+    "spring"
+  ],
   "author": "Joel DIBASSO <joel@dibasso.fr>",
   "license": "MIT",
   "devDependencies": {
