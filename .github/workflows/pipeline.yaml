@@ -40,7 +40,7 @@ jobs:
       - name: Get the output 🖨
         run: echo "The output was ${{ steps.check.outputs.changed }}"
       - if: github.event_name == 'pull_request' && steps.check.outputs.changed == 'false'
-        name: Dependabot version bump 👊
+        name: Version bump 👊
         uses: phips28/gh-action-bump-version@master
         with:
           minor-wording: 'MINOR'
