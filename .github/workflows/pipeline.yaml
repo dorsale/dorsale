@@ -53,6 +53,20 @@ jobs:
         env:
           PR_URL: ${{github.event.pull_request.html_url}}
           GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+  create-tag:
+    if: github.event_name == 'push'
+    needs: bump-npm-version
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Get npm version 📦
+        id: "get_npm_version"
+        run: echo version=`npm pkg get version` >> $GITHUB_OUTPUT
+      - name: Create tag 🏷
+        uses: rickstaa/action-create-tag@v1
+        id: "tag_create"
+        with:
+          tag: ${{steps.get_npm_version.outputs.version}}
   build-n-publish:
     if: github.event_name == 'push'
     needs: test
