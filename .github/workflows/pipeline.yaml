@@ -28,6 +28,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.PAT }}
       - id: check
         name: Check for version change 📝
         uses: EndBug/version-check@v2
@@ -45,8 +47,6 @@ jobs:
         with:
           commit_message: "CI: bumps version to ${{steps.bump.outputs.version}}"
           commit_options: '--no-verify --signoff'
-        env:
-          GITHUB_TOKEN: ${{ secrets.PAT }}
       - if: github.actor == 'dependabot[bot]'
         name: Enable auto-merge 🍾
         run: gh pr merge --auto --squash "$PR_URL"
