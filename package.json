@@ -1,6 +1,6 @@
 {
   "name": "dorsale",
-  "version": "0.0.25",
+  "version": "0.0.26",
   "description": "Dorsale is an attempt at creating a TS equivalent of Java Spring",
   "repository": {
     "type": "git",
@@ -19,7 +19,6 @@
     "build": "tsc --project tsconfig.prod.json",
     "debug": "tsx test/debug.ts",
     "test": "mocha --exit",
-    "test:ci": "mocha --reporter mocha-junit-reporter --reporter-options mochaFile=./.test-results/test-results.xml",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "lint": "eslint --ext .ts src test"
   },

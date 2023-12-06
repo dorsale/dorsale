@@ -1,0 +1,53 @@
+name: 'main branch pipeline'
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 20
+          cache: 'npm'
+      - name: Install dependencies 💿
+        run: npm ci
+      - name: Run tests 🧪
+        run: npm run test
+  create-tag:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.PAT }}
+      - name: Get npm version 📦
+        id: "get_npm_version"
+        run: echo version=`npm pkg get version` >> $GITHUB_OUTPUT
+      - name: Create tag 🏷
+        uses: rickstaa/action-create-tag@v1
+        id: "tag_create"
+        with:
+          tag: ${{steps.get_npm_version.outputs.version}}
+  build-n-publish:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 20
+          cache: 'npm'
+          registry-url: 'https://registry.npmjs.org'
+      - name: Install dependencies 💿
+        run: npm ci
+      - name: Build 🏗
+        run: npm run build
+      - name: Publish to NPM 📦
+        run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
