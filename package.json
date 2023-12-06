@@ -66,6 +66,6 @@
     "fast-glob": "^3.2.12",
     "fastify": "^4.17.0",
     "reflect-metadata": "^0.1.13",
-    "sinon": "^15.1.0"
+    "sinon": "^17.0.1"
   }
 }
