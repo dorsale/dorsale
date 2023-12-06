@@ -56,7 +56,7 @@ jobs:
           GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
   create-tag:
     if: github.event_name == 'push'
-    needs: bump-npm-version
+    needs: test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
