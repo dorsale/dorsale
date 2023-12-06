@@ -57,6 +57,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.PAT }}
       - name: Get npm version 📦
         id: "get_npm_version"
         run: echo version=`npm pkg get version` >> $GITHUB_OUTPUT
