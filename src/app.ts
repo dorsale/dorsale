@@ -1,4 +1,4 @@
-import Fastify, { FastifyInstance, RouteOptions } from "fastify";
+import Fastify, { FastifyInstance, FastifyRequest, RouteOptions } from "fastify";
 import fg from "fast-glob";
 import {
   BODY_PARAM_INDEX,
@@ -10,7 +10,7 @@ import {
   fileToAst,
   ParseResult,
   QUERY_PARAM_INDEXES,
-  RouteEntry,
+  RouteEntry
 } from "./util";
 import path from "path";
 import { Node } from "estree";
@@ -65,12 +65,12 @@ function resolveDependencies(
   elements: Map<string, DorsaleElement>,
   runtimes: Map<string, object>,
   implementations: Map<string, string>,
-  server: FastifyInstance
+  server: FastifyInstance,
 ) {
   const ok = new Set<string>();
   while (elements.size > 0) {
     const elementName = getFirstElementWithNoDependency(
-      elements.keys().next().value
+      elements.keys().next().value,
     );
     mountElement(elementName, elements, runtimes, implementations, server);
     removeElement(elementName);
@@ -96,7 +96,7 @@ function mountElement(
   elements: Map<string, DorsaleElement>,
   runtimes: Map<string, object>,
   implementations: Map<string, string>,
-  server: FastifyInstance
+  server: FastifyInstance,
 ) {
   const element =
     elements.get(elementName) ??
@@ -105,11 +105,11 @@ function mountElement(
   switch (element.type) {
     case DorsaleElementType.CONTROLLER: {
       const instance = new (element.constructor as any)(
-        ...element.dependencies.map((dep) => runtimes.get(dep))
+        ...element.dependencies.map((dep) => runtimes.get(dep)),
       );
       const routes: RouteEntry[] = Reflect.getOwnMetadata(
         CONTROLLER_ROUTES,
-        element.constructor.prototype
+        element.constructor.prototype,
       );
       const plugin = async function (fastify: FastifyInstance) {
         for (const route of routes) {
@@ -124,7 +124,7 @@ function mountElement(
     case DorsaleElementType.COMPONENT:
     case DorsaleElementType.REPOSITORY: {
       const instance = new (element.constructor as any)(
-        ...element.dependencies.map((dep) => runtimes.get(dep))
+        ...element.dependencies.map((dep) => runtimes.get(dep)),
       );
       runtimes.set(elementName, instance);
       break;
@@ -170,7 +170,7 @@ export function parseDorsaleElement(fileAst: Node): ParseResult | undefined {
             } else if (param.type === "TSParameterProperty") {
               res.dependsOn.push(
                 // @ts-ignore
-                param.parameter.typeAnnotation.typeAnnotation.typeName.name
+                param.parameter.typeAnnotation.typeAnnotation.typeName.name,
               );
             }
           });
@@ -199,35 +199,50 @@ function addRoute(route: RouteEntry, constructor: Function, instance: object) {
   const params = Reflect.getOwnMetadata(
     ENDPOINT_PARAMS,
     constructor.prototype,
-    route.mapTo.method
+    route.mapTo.method,
   );
   const queryParamIndexes =
     Reflect.getOwnMetadata(
       QUERY_PARAM_INDEXES,
       constructor.prototype,
-      route.mapTo.method
+      route.mapTo.method,
     ) || [];
   const bodyParamIndex = Reflect.getOwnMetadata(
     BODY_PARAM_INDEX,
     constructor.prototype,
-    route.mapTo.method
+    route.mapTo.method,
   );
+  const requestParamHandler = (param: string) =>
+    function (request: FastifyRequest) {
+      // @ts-ignore
+      return request.params[param];
+    };
+  const queryParamHandler = (param: string) =>
+    function (request: FastifyRequest) {
+      // @ts-ignore
+      return request.query[param];
+    };
+  const bodyParamHandler = () =>
+    function (request: FastifyRequest) {
+      return request.body;
+    };
+  const paramHandlers: ((request: FastifyRequest) => any)[] = params.map((param: string, index: number) => {
+    if (queryParamIndexes.includes(index)) {
+      return queryParamHandler(param);
+    } else if (bodyParamIndex === index) {
+      return bodyParamHandler();
+    } else {
+      return requestParamHandler(param);
+    }
+  });
+  const parameterMatching: (request: FastifyRequest) => any[] = function (request: FastifyRequest) {
+    return paramHandlers.map((f: (request: FastifyRequest) => any) => f(request));
+  };
   return {
     method: route.method,
     url: route.url,
     handler: async (request) => {
-      const args = params.map((param, index) => {
-        if (queryParamIndexes.includes(index)) {
-          // @ts-ignore
-          return request.query[param];
-        } else if (bodyParamIndex === index) {
-          return request.body;
-        } else {
-          // @ts-ignore
-          return request.params[param];
-        }
-      });
-      return constructor.prototype[route.mapTo.method].call(instance, ...args);
+      return constructor.prototype[route.mapTo.method].call(instance, ...parameterMatching(request));
     },
   } as RouteOptions;
 }
