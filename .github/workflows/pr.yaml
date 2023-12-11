@@ -7,10 +7,12 @@ on:
 
 jobs:
   enable-auto-merge:
+    permissions:
+      contents: write
     runs-on: ubuntu-latest
     steps:
       - name: Extract branch name
-        run: echo "::set-output name=BRANCH_NAME::$(echo ${GITHUB_REF#refs/heads/})"
+        run: echo "BRANCH_NAME=$(echo ${{ github.event.pull_request.head.ref }})" >> $GITHUB_OUTPUT
         id: extract_branch_name
       - if: startsWith(steps.extract_branch_name.outputs.BRANCH_NAME, 'dependabot/')
         name: Enable auto-merge 🍾
