@@ -12,7 +12,7 @@ jobs:
       - name: Extract branch name
         run: |
           echo "BRANCH_NAME=$(echo {{ github.event.pull_request.head.ref }})" >> $GITHUB_OUTPUT
-          echo '{{ github.event.pull_request.head.ref }}'
+          echo ${{ github.event.pull_request.head.ref }}
         id: extract_branch_name
       - if: startsWith(steps.extract_branch_name.outputs.BRANCH_NAME, 'dependabot/')
         name: Enable auto-merge 🍾
