@@ -48,7 +48,7 @@
     "babel-walk": "^3.0.0",
     "chai": "*",
     "eslint": "^8.41.0",
-    "eslint-config-prettier": "^8.8.0",
+    "eslint-config-prettier": "^9.1.0",
     "mocha": "*",
     "mocha-junit-reporter": "^2.2.0",
     "nodemon": "^3.0.2",
