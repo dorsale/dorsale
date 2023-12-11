@@ -7,10 +7,13 @@ on:
 
 jobs:
   enable-auto-merge:
-    if: github.actor == 'dependabot[bot]'
     runs-on: ubuntu-latest
     steps:
-      - name: Enable auto-merge 🍾
+      - name: Extract branch name
+        run: echo "::set-output name=BRANCH_NAME::$(echo ${GITHUB_REF#refs/heads/})"
+        id: extract_branch_name
+      - if: startsWith(steps.extract_branch_name.outputs.BRANCH_NAME, 'dependabot/')
+        name: Enable auto-merge 🍾
         run: gh pr merge --auto --squash "$PR_URL"
         env:
           PR_URL: ${{github.event.pull_request.html_url}}
