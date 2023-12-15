@@ -1,10 +1,10 @@
 {
   "name": "dorsale",
-  "version": "0.0.39",
+  "version": "0.0.40",
   "description": "Dorsale is an attempt at creating a TS equivalent of Java Spring",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/dj-256/dorsale.git"
+    "url": "git+https://github.com/dorsale/dorsale.git"
   },
   "type": "module",
   "main": "dist/index.js",
@@ -44,7 +44,7 @@
     "@types/mocha": "^10.0.1",
     "@types/node": "^20.2.1",
     "@typescript-eslint/eslint-plugin": "^6.14.0",
-    "@typescript-eslint/parser": "^5.59.7",
+    "@typescript-eslint/parser": "^6.14.0",
     "babel-walk": "^3.0.0",
     "chai": "*",
     "eslint": "^8.41.0",
