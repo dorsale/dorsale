@@ -15,11 +15,13 @@ export enum DorsaleElementType {
   COMPONENT = "Component",
   REPOSITORY = "Repository",
   DAO = "Dao",
+  CUSTOM = "Custom",
 }
 
 export type DorsaleOptions = {
   rootDir?: string;
   port?: number;
+  plugins?: DorsalePlugin[];
 };
 
 export type RouteEntry = {
@@ -57,6 +59,12 @@ export type ParseResult = {
   dependsOn: string[];
   implemented: string[];
 };
+
+export type DorsalePlugin = {
+  name: string;
+  customElements?: string[];
+  onMount: (target: Function, instance: object, pluginData: any) => void;
+}
 
 export const QUERY_PARAM_INDEXES = "queryParamIndexes";
 export const BODY_PARAM_INDEX = "bodyParamIndex";

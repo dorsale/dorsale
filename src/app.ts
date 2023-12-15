@@ -6,6 +6,7 @@ import {
   DorsaleElement,
   DorsaleElementType,
   DorsaleOptions,
+  DorsalePlugin,
   ENDPOINT_PARAMS,
   fileToAst,
   ParseResult,
@@ -24,19 +25,25 @@ export async function mountApp(options: DorsaleOptions) {
   const fastify: FastifyInstance = Fastify({ logger: true });
   const rootDir = options.rootDir || process.cwd() + "/src";
   const runtimes = new Map<string, object>();
+  const plugins = options.plugins ?? [];
+  const pluginData = {};
+  const customElements = plugins
+    .map((p) => p.customElements ?? [])
+    .reduce((acc, val) => acc.concat(val), []);
   let start = performance.now();
-  const { elements, implementations } = await buildGraph(rootDir);
+  const { elements, implementations } = await buildGraph(rootDir, customElements);
   const buildGraphTime = Math.round(performance.now() - start);
   console.log("Graph built in", buildGraphTime, "ms");
   start = performance.now();
-  resolveDependencies(elements, runtimes, implementations, fastify);
+  resolveDependencies(elements, runtimes, implementations, fastify, plugins, pluginData);
   const resolveDependenciesTime = Math.round(performance.now() - start);
   console.log("Dependencies resolved in", resolveDependenciesTime, "ms");
 
   return { server: fastify, runtimes };
 }
 
-async function buildGraph(rootDir: string) {
+
+async function buildGraph(rootDir: string, customElements: string[]) {
   // global["$$fastify"] = fastify;
   const files = fg.sync(["**/*.ts"], { cwd: rootDir });
   const elements = new Map<string, DorsaleElement>();
@@ -44,7 +51,7 @@ async function buildGraph(rootDir: string) {
   for (const file of files) {
     const filename = path.join(rootDir, file);
     const ast = fileToAst(filename);
-    const res = parseDorsaleElement(ast);
+    const res = parseDorsaleElement(ast, customElements);
     if (res) {
       const { name, constructor } = await importElement(filename, res.name);
       elements.set(name, {
@@ -66,13 +73,15 @@ function resolveDependencies(
   runtimes: Map<string, object>,
   implementations: Map<string, string>,
   server: FastifyInstance,
+  plugins: DorsalePlugin[],
+  pluginData: any,
 ) {
   const ok = new Set<string>();
   while (elements.size > 0) {
     const elementName = getFirstElementWithNoDependency(
       elements.keys().next().value,
     );
-    mountElement(elementName, elements, runtimes, implementations, server);
+    mountElement(elementName, elements, runtimes, implementations, server, plugins, pluginData);
     removeElement(elementName);
   }
 
@@ -97,6 +106,8 @@ function mountElement(
   runtimes: Map<string, object>,
   implementations: Map<string, string>,
   server: FastifyInstance,
+  plugins: DorsalePlugin[],
+  pluginData: any = {},
 ) {
   const element =
     elements.get(elementName) ??
@@ -131,10 +142,28 @@ function mountElement(
     }
     case DorsaleElementType.DAO:
       break;
+    case DorsaleElementType.CUSTOM: {
+      const instance = new (element.constructor as any)(
+        ...element.dependencies.map((dep) => runtimes.get(dep)),
+      );
+      const plugin = Reflect.getOwnMetadata(
+        "PLUGIN_NAME",
+        element.constructor.prototype,
+      );
+      if (!plugin) {
+        throw new Error("Custom element must have a plugin name");
+      }
+      const pluginInstance = plugins.find((p) => p.name === plugin);
+      if (!pluginInstance) {
+        throw new Error("Plugin not found");
+      }
+      pluginInstance.onMount(element.constructor, instance, pluginData);
+      break;
+    }
   }
 }
 
-export function parseDorsaleElement(fileAst: Node): ParseResult | undefined {
+export function parseDorsaleElement(fileAst: Node, customElements: string[]): ParseResult | undefined {
   const res: any = { dependsOn: [], implemented: [] };
   let isInsideClassDeclaration = false;
   walk(fileAst, {
@@ -149,7 +178,12 @@ export function parseDorsaleElement(fileAst: Node): ParseResult | undefined {
             ) {
               res.name = node?.id?.name;
               res.type = DorsaleElementType[e];
+              break
             }
+          }
+          if (customElements.includes(d.expression.name ?? d.expression.callee.name)) {
+            res.name = node?.id?.name;
+            res.type = DorsaleElementType.CUSTOM;
           }
         });
         isInsideClassDeclaration = true;
