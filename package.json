@@ -58,6 +58,7 @@
     "typescript": "^5.0.4"
   },
   "dependencies": {
+    "@dorsale/commons": "^1.0.0",
     "@typescript-eslint/typescript-estree": "^6.13.2",
     "acorn": "^8.8.2",
     "acorn-walk": "^8.2.0",

@@ -2,6 +2,7 @@ import Fastify, { FastifyInstance, FastifyRequest, RouteOptions } from "fastify"
 import fg from "fast-glob";
 import {
   BODY_PARAM_INDEX,
+  CONTROLLER_PREFIX,
   CONTROLLER_ROUTES,
   DorsaleElement,
   DorsaleElementType,
@@ -16,6 +17,7 @@ import {
 import path from "path";
 import { Node } from "estree";
 import { walk } from "estree-walker";
+import { CUSTOM_ELEMENT_NAME_PROPERTY_KEY, PLUGIN_NAME_PROPERTY_KEY } from "@dorsale/commons";
 
 /**
  * Mounts the dorsale application
@@ -30,6 +32,11 @@ export async function mountApp(options: DorsaleOptions) {
   const customElements = plugins
     .map((p) => p.customElements ?? [])
     .reduce((acc, val) => acc.concat(val), []);
+
+  plugins.forEach((plugin) => {
+    plugin.register({ pluginData, server: fastify });
+  })
+
   let start = performance.now();
   const { elements, implementations } = await buildGraph(rootDir, customElements);
   const buildGraphTime = Math.round(performance.now() - start);
@@ -128,7 +135,11 @@ function mountElement(
           fastify.route(routeOptions);
         }
       };
-      server.register(plugin, { prefix: instance.prefix ?? "" });
+      const prefix = Reflect.getMetadata(
+        CONTROLLER_PREFIX,
+        element.constructor,
+      );
+      server.register(plugin, { prefix });
       runtimes.set(elementName, instance);
       break;
     }
@@ -147,8 +158,8 @@ function mountElement(
         ...element.dependencies.map((dep) => runtimes.get(dep)),
       );
       const plugin = Reflect.getOwnMetadata(
-        "PLUGIN_NAME",
-        element.constructor.prototype,
+        PLUGIN_NAME_PROPERTY_KEY,
+        element.constructor,
       );
       if (!plugin) {
         throw new Error("Custom element must have a plugin name");
@@ -157,7 +168,14 @@ function mountElement(
       if (!pluginInstance) {
         throw new Error("Plugin not found");
       }
-      pluginInstance.onMount(element.constructor, instance, pluginData);
+      const customElementName = Reflect.getOwnMetadata(
+        CUSTOM_ELEMENT_NAME_PROPERTY_KEY,
+        element.constructor,
+      );
+      if (!customElementName) {
+        throw new Error("Custom element must have a name");
+      }
+      pluginInstance.onMount[customElementName](element.constructor, instance, pluginData);
       break;
     }
   }
