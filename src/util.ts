@@ -1,6 +1,7 @@
 import { Node } from "estree";
 import fs from "fs";
 import { parse } from "@typescript-eslint/typescript-estree";
+import { FastifyInstance } from "fastify";
 
 export function fileToAst(filename: string) {
   const code = fs.readFileSync(filename, "utf8");
@@ -15,11 +16,13 @@ export enum DorsaleElementType {
   COMPONENT = "Component",
   REPOSITORY = "Repository",
   DAO = "Dao",
+  CUSTOM = "Custom",
 }
 
 export type DorsaleOptions = {
   rootDir?: string;
   port?: number;
+  plugins?: DorsalePlugin[];
 };
 
 export type RouteEntry = {
@@ -56,6 +59,25 @@ export type ParseResult = {
   type: DorsaleElementType;
   dependsOn: string[];
   implemented: string[];
+};
+
+export type DorsalePlugin = {
+  name: string;
+  customElements?: string[];
+  register: ({
+    pluginData,
+    server,
+  }: {
+    pluginData: any;
+    server: FastifyInstance;
+  }) => void;
+  onMount: {
+    [element: string]: (
+      target: Function,
+      instance: object,
+      pluginData: any,
+    ) => void;
+  };
 };
 
 export const QUERY_PARAM_INDEXES = "queryParamIndexes";

@@ -16,11 +16,9 @@ import {
  * @constructor
  */
 export function Controller(prefix?: string) {
-  return (target: Function) => {
-    if (prefix) {
-      Reflect.defineProperty(target, CONTROLLER_PREFIX, { value: prefix });
-    }
-  };
+  return function (target: Function) {
+    Reflect.defineMetadata(CONTROLLER_PREFIX, prefix, target);
+  }
 }
 
 /**
