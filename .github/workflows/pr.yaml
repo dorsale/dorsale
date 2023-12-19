@@ -75,6 +75,7 @@ jobs:
         env:
           PR_URL: ${{ github.event.pull_request.html_url }}
           GITHUB_TOKEN: ${{ secrets.PAT }}
+      - run: echo "${{ steps.check_dependabot.outputs.dependabot }}"
   comment-pr:
     if: ${{ needs.enable-auto-merge.outputs.dependabot == 'true' && needs.bump-npm-version.outputs.proceed == 'false' }}
     needs: [enable-auto-merge, bump-npm-version]
@@ -85,5 +86,3 @@ jobs:
       - uses: mshick/add-pr-comment@v2
         with:
           message: "@dependabot recreate"
-      - run: echo "${{ needs.enable-auto-merge.outputs.dependabot }}"
-      - run: echo "${{ needs.bump-npm-version.outputs.proceed }}"
