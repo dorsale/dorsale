@@ -2,6 +2,7 @@ import * as acorn from "acorn";
 import "reflect-metadata";
 import {
   BODY_PARAM_INDEX,
+  BODY_SCHEMA,
   CONTROLLER_PREFIX,
   CONTROLLER_ROUTES,
   ENDPOINT_PARAMS,
@@ -159,6 +160,17 @@ export function Delete(url: string) {
  */
 export function Body(target: object, propertyKey: string, index: number) {
   Reflect.defineMetadata(BODY_PARAM_INDEX, index, target, propertyKey);
+}
+
+/**
+ * Decorator for body schema
+ * @param schema - schema for the body. The schema must be a valid JSON schema
+ * @constructor
+ */
+export function BodySchema(schema: object) {
+  return function (target: object, propertyKey: string) {
+    Reflect.defineMetadata(BODY_SCHEMA, schema, target, propertyKey);
+  }
 }
 
 export function Component(target: Function) {

@@ -1,10 +1,22 @@
 # dorsale
 
-Dorsale is an attempt at creating a TS equivalent of Spring for Java. It is a work in progress, and is not ready for
+Dorsale is an attempt at creating a TS equivalent of Spring for Java. It is built on top of [Fastify](https://github.com/fastify/fastify) and uses
+decorators to define elements of your application.  
+It is a work in progress, and is not ready for
 production use.
 If you benchmark it, please let me know the results!
 
-## How to use
+## Installation
+
+Dorsale is available on npm. You can install it with:
+
+```shell
+npm install dorsale
+```
+
+## Getting started
+
+### Bootstrapping
 
 The setup is intentionally minimalistic. Bootstrapping a Dorsale application is as simple as:
 
@@ -16,7 +28,9 @@ dorsale({ port: 8080 });
 
 This will start a server on port 8080. You can then add controllers, services, and repositories to your application.
 
+### Full application example
 A full example could look like this:
+
 ```
 src
 ├── index.ts
@@ -26,11 +40,11 @@ src
 ├── userController.ts
 ```
 
-
 ```ts
 // index.ts
 import { dorsale } from 'dorsale';
-dorsale({port: 8080});
+
+dorsale({ port: 8080 });
 ```
 
 ```ts
@@ -64,7 +78,7 @@ import { Component } from "dorsale";
 
 @Component
 export class UserManager implements UserFinder {
-  users: User[] = [<some users >];
+  users: User[] // = [... some users];
 
   findAllUsers(): Promise<User[]> {
     return Promise.resolve(this.users);
@@ -113,6 +127,115 @@ to the `dorsale` call.
 ```ts
 dorsale({ port: 8080, rootDir: "myFolder/relative/to/the/current/file" });
 ```
+
+## Controllers
+
+### Controller classes
+
+Controllers are classes that define the routes exposed by your application. They are decorated with `@Controller()`.
+```ts
+import { Controller } from "dorsale";
+
+@Controller()
+export class UserController {
+    // ... your routes
+}
+```
+
+You can also specify a prefix for all the routes defined in a controller by passing it as an argument to the decorator.
+```ts
+@Controller("/users")
+export class UserController {
+    // ... your routes
+}
+```
+
+### Routes
+
+Routes are defined by decorating methods with `@Get`, `@Post`, `@Put`, `@Patch`, or `@Delete`.
+```ts
+import { Controller, Get } from "dorsale";
+
+@Controller()
+export class UserController {
+    @Get("/hello")
+    getHello() {
+        return "Hello world!";
+    }
+}
+```
+In the example above, a GET route will be exposed at `/hello`, and will return the string `"Hello world!"`.
+
+### Route parameters
+
+You can define route parameters by adding a colon (`:`) before the parameter name in the route path.
+```ts
+import { Controller, Get } from "dorsale";
+
+@Controller()
+export class UserController {
+    @Get("/users/:id")
+    getUserById(id: string) {
+        // ...
+    }
+}
+```
+
+### Query parameters
+
+Query parameters are defined by adding a `@Query` decorator to the parameter.
+```ts
+import { Controller, Get, Query } from "dorsale";
+
+@Controller()
+export class UserController {
+    @Get("/users")
+    getUsers(@Query("page") page: number, @Query("limit") limit: number) {
+        // ...
+    }
+}
+```
+If some query parameters are not provided in the request, they will be `undefined`.
+
+### Body
+
+You can access the body of the request by adding a `@Body` decorator to a parameter.
+```ts
+import { Controller, Post, Body } from "dorsale";
+
+@Controller()
+export class UserController {
+    @Post("/users")
+    createUser(@Body user: User) {
+        // ...
+    }
+}
+```
+Note that the `Body` decorator **must not be used with parentheses.**
+
+### Body validation
+
+You can validate the body of a request by adding a `@BodySchema` decorator to a route.
+```ts
+import { Controller, Post, Body, BodySchema } from "dorsale";
+
+@Controller()
+export class UserController {
+    @Post("/users")
+    @BodySchema({
+        type: "object",
+        properties: {
+            email: { type: "string" },
+            password: { type: "string" },
+        },
+        required: ["email", "password"],
+    })
+    createUser(@Body user: User) {
+        // ...
+    }
+}
+```
+This uses Fastify's [JSON Schema](https://fastify.dev/docs/latest/Guides/Getting-Started/#validate-your-data) validation.
 
 ## Testing
 
