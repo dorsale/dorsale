@@ -189,8 +189,8 @@ import { Controller, Get, Query } from "dorsale";
 
 @Controller()
 export class UserController {
-    @Get("/users")
-    getUsers(@Query("page") page: number, @Query("limit") limit: number) {
+    @Get("/users") // e.g. GET /users?page=1&limit=10
+    getUsers(@Query page: number, @Query limit: number) {
         // ...
     }
 }
@@ -211,7 +211,6 @@ export class UserController {
     }
 }
 ```
-Note that the `Body` decorator **must not be used with parentheses.**
 
 ### Body validation
 
