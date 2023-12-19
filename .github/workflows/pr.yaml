@@ -85,3 +85,5 @@ jobs:
       - uses: mshick/add-pr-comment@v2
         with:
           message: "@dependabot recreate"
+      - run: echo "${{ needs.enable-auto-merge.outputs.dependabot }}"
+      - run: echo "${{ needs.bump-npm-version.outputs.proceed }}"
