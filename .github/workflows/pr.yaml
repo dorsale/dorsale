@@ -57,29 +57,34 @@ jobs:
     outputs:
       dependabot: ${{ steps.check_dependabot.outputs.dependabot }}
     steps:
-      - name: Extract branch name
-        run: echo "BRANCH_NAME=$(echo ${{ github.event.pull_request.head.ref }})" >> $GITHUB_OUTPUT
+      - name: Extract branch name 🌳
         id: extract_branch_name
-      - id: check_dependabot
+        run: echo "BRANCH_NAME=$(echo ${{ github.event.pull_request.head.ref }})" >> $GITHUB_OUTPUT
+      - name: Check if PR was triggered by dependabot 🤖
+        id: check_dependabot
         run: |
-          if [[ "${{ steps.extract_branch_name.outputs.BRANCH_NAME }}" == "dependabot"* ]]; then
-            echo "dependabot=true" >> $GITHUB_OUTPUT
+          if [[ "${{ steps.extract_branch_name.outputs.branch }}" == "dependabot"* ]]; then
+            echo "PR is from dependabot"
+            echo dependabot=true >> $GITHUB_OUTPUT
           else
-            echo "dependabot=false" >> $GITHUB_OUTPUT
+            echo "PR is not from dependabot"
+            echo dependabot=false >> $GITHUB_OUTPUT
           fi
-      - if: ${{ steps.check_dependabot.outputs.dependabot }} == 'true'
+      - if: ${{ steps.check_dependabot.outputs.dependabot == 'true' }}
         name: Enable auto-merge 🍾
         run: gh pr merge --auto --squash "$PR_URL"
         env:
           PR_URL: ${{ github.event.pull_request.html_url }}
           GITHUB_TOKEN: ${{ secrets.PAT }}
+      - run: echo "${{ steps.check_dependabot.outputs.dependabot }}"
   comment-pr:
-    if: ${{ needs.enable-auto-merge.outputs.dependabot }} == 'true' && ${{ needs.bump-npm-version.outputs.proceed }} == 'false'
-    needs: [ enable-auto-merge, bump-npm-version ]
+    if: ${{ needs.enable-auto-merge.outputs.dependabot == 'true' && needs.bump-npm-version.outputs.proceed == 'false' }}
+    needs: [enable-auto-merge, bump-npm-version]
     runs-on: ubuntu-latest
     permissions:
       pull-requests: write
     steps:
-      - uses: mshick/add-pr-comment@v2
+      - name: Comment on PR 💬
+        uses: mshick/add-pr-comment@v2
         with:
           message: "@dependabot recreate"
