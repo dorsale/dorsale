@@ -63,19 +63,21 @@ jobs:
       - id: check_dependabot
         run: |
           if [[ "${{ steps.extract_branch_name.outputs.BRANCH_NAME }}" == "dependabot"* ]]; then
-            echo "dependabot=true" >> $GITHUB_OUTPUT
+            echo "PR is from dœependabot"
+            echo dependabot=true >> $GITHUB_OUTPUT
           else
-            echo "dependabot=false" >> $GITHUB_OUTPUT
+            echo "PR is not from dependabot"
+            echo dependabot=false >> $GITHUB_OUTPUT
           fi
       - if: ${{ steps.check_dependabot.outputs.dependabot }} == 'true'
         name: Enable auto-merge 🍾
-        run: gh pr merge --auto --squash "$PR_URL"
+        run: echo "gh pr merge --auto --squash $PR_URL"
         env:
           PR_URL: ${{ github.event.pull_request.html_url }}
           GITHUB_TOKEN: ${{ secrets.PAT }}
   comment-pr:
     if: ${{ needs.enable-auto-merge.outputs.dependabot }} == 'true' && ${{ needs.bump-npm-version.outputs.proceed }} == 'false'
-    needs: [ enable-auto-merge, bump-npm-version ]
+    needs: enable-auto-merge
     runs-on: ubuntu-latest
     permissions:
       pull-requests: write
