@@ -6,24 +6,6 @@ on:
       - main
 
 jobs:
-  enable-auto-merge:
-    permissions:
-      contents: write
-    runs-on: ubuntu-latest
-    outputs:
-      dependabot: ${{ steps.check_dependabot.outputs.dependabot }}
-    steps:
-      - name: Extract branch name
-        run: echo "BRANCH_NAME=$(echo ${{ github.event.pull_request.head.ref }})" >> $GITHUB_OUTPUT
-        id: extract_branch_name
-      - if: startsWith(steps.extract_branch_name.outputs.BRANCH_NAME, 'dependabot/')
-        id: check_dependabot
-        run: echo "dependabot=true" >> $GITHUB_OUTPUT
-      - name: Enable auto-merge 🍾
-        run: gh pr merge --auto --squash "$PR_URL"
-        env:
-          PR_URL: ${{ github.event.pull_request.html_url }}
-          GITHUB_TOKEN: ${{ secrets.PAT }}
   bump-npm-version:
     outputs:
       proceed: ${{ steps.check.outputs.changed }}
@@ -38,7 +20,7 @@ jobs:
       - id: check
         name: Check for version change 📝
         uses: EndBug/version-check@v2
-      - if: github.event_name == 'pull_request' && steps.check.outputs.changed == 'false'
+      - if: steps.check.outputs.changed == 'false'
         id: bump
         name: Version bump 👊
         run: |
@@ -46,14 +28,12 @@ jobs:
           export BUMP_TYPE="${BUMP_TYPE:-patch}"
           echo version=`npm version $BUMP_TYPE --no-git-tag-version` >> $GITHUB_OUTPUT
           echo bump_type=$BUMP_TYPE >> $GITHUB_OUTPUT
-      - name: Commit and push 📤
-        run: |
-          git checkout -b ${{ github.event.pull_request.head.ref }}
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git add .
-          git commit -m "CI: bumps version to ${{steps.bump.outputs.version}}" --no-verify --signoff
-          git push origin ${{ github.event.pull_request.head.ref }}
+      - if: steps.check.outputs.changed == 'false'
+        name: Commit and push 📤
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "CI: bumps version to ${{steps.bump.outputs.version}}"
+          commit_options: '--no-verify --signoff'
   comment-pr:
     if: ${{ needs.enable-auto-merge.outputs.dependabot }} == 'true' && ${{ needs.bump-npm-version.outputs.proceed }} == 'false'
     needs: [ enable-auto-merge, bump-npm-version ]
@@ -79,3 +59,24 @@ jobs:
         run: npm ci
       - name: Run tests 🧪
         run: npm run test
+  enable-auto-merge:
+    if: ${{ needs.bump-npm-version.outputs.proceed }} == 'true'
+    permissions:
+      contents: write
+    needs: bump-npm-version
+    runs-on: ubuntu-latest
+    outputs:
+      dependabot: ${{ steps.check_dependabot.outputs.dependabot }}
+    steps:
+      - name: Extract branch name
+        run: echo "BRANCH_NAME=$(echo ${{ github.event.pull_request.head.ref }})" >> $GITHUB_OUTPUT
+        id: extract_branch_name
+      - if: startsWith(steps.extract_branch_name.outputs.BRANCH_NAME, 'dependabot/')
+        id: check_dependabot
+        run: echo "dependabot=true" >> $GITHUB_OUTPUT
+      - if: startsWith(steps.extract_branch_name.outputs.BRANCH_NAME, 'dependabot/')
+        name: Enable auto-merge 🍾
+        run: gh pr merge --auto --squash "$PR_URL"
+        env:
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          GITHUB_TOKEN: ${{ secrets.PAT }}
