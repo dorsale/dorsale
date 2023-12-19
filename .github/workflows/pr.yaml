@@ -6,24 +6,6 @@ on:
       - main
 
 jobs:
-  enable-auto-merge:
-    permissions:
-      contents: write
-    runs-on: ubuntu-latest
-    outputs:
-      dependabot: ${{ steps.check_dependabot.outputs.dependabot }}
-    steps:
-      - name: Extract branch name
-        run: echo "BRANCH_NAME=$(echo ${{ github.event.pull_request.head.ref }})" >> $GITHUB_OUTPUT
-        id: extract_branch_name
-      - if: startsWith(steps.extract_branch_name.outputs.BRANCH_NAME, 'dependabot/')
-        id: check_dependabot
-        run: echo "dependabot=true" >> $GITHUB_OUTPUT
-      - name: Enable auto-merge 🍾
-        run: gh pr merge --auto --squash "$PR_URL"
-        env:
-          PR_URL: ${{ github.event.pull_request.html_url }}
-          GITHUB_TOKEN: ${{ secrets.PAT }}
   bump-npm-version:
     outputs:
       proceed: ${{ steps.check.outputs.changed }}
@@ -79,3 +61,24 @@ jobs:
         run: npm ci
       - name: Run tests 🧪
         run: npm run test
+  enable-auto-merge:
+    if: ${{ needs.bump-npm-version.outputs.proceed }} == 'true'
+    permissions:
+      contents: write
+    needs: bump-npm-version
+    runs-on: ubuntu-latest
+    outputs:
+      dependabot: ${{ steps.check_dependabot.outputs.dependabot }}
+    steps:
+      - name: Extract branch name
+        run: echo "BRANCH_NAME=$(echo ${{ github.event.pull_request.head.ref }})" >> $GITHUB_OUTPUT
+        id: extract_branch_name
+      - if: startsWith(steps.extract_branch_name.outputs.BRANCH_NAME, 'dependabot/')
+        id: check_dependabot
+        run: echo "dependabot=true" >> $GITHUB_OUTPUT
+      - if: startsWith(steps.extract_branch_name.outputs.BRANCH_NAME, 'dependabot/')
+        name: Enable auto-merge 🍾
+        run: gh pr merge --auto --squash "$PR_URL"
+        env:
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          GITHUB_TOKEN: ${{ secrets.PAT }}
