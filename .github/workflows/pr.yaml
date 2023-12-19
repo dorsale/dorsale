@@ -57,13 +57,14 @@ jobs:
     outputs:
       dependabot: ${{ steps.check_dependabot.outputs.dependabot }}
     steps:
-      - name: Extract branch name
-        run: echo "BRANCH_NAME=$(echo ${{ github.event.pull_request.head.ref }})" >> $GITHUB_OUTPUT
+      - name: Extract branch name 🌳
         id: extract_branch_name
-      - id: check_dependabot
+        run: echo "BRANCH_NAME=$(echo ${{ github.event.pull_request.head.ref }})" >> $GITHUB_OUTPUT
+      - name: Check if PR was triggered by dependabot 🤖
+        id: check_dependabot
         run: |
-          if [[ "${{ steps.extract_branch_name.outputs.BRANCH_NAME }}" == "dependabot"* ]]; then
-            echo "PR is from dœependabot"
+          if [[ "${{ steps.extract_branch_name.outputs.branch }}" == "dependabot"* ]]; then
+            echo "PR is from dependabot"
             echo dependabot=true >> $GITHUB_OUTPUT
           else
             echo "PR is not from dependabot"
@@ -71,7 +72,7 @@ jobs:
           fi
       - if: ${{ steps.check_dependabot.outputs.dependabot == 'true' }}
         name: Enable auto-merge 🍾
-        run: echo "gh pr merge --auto --squash $PR_URL"
+        run: gh pr merge --auto --squash "$PR_URL"
         env:
           PR_URL: ${{ github.event.pull_request.html_url }}
           GITHUB_TOKEN: ${{ secrets.PAT }}
@@ -83,6 +84,7 @@ jobs:
     permissions:
       pull-requests: write
     steps:
-      - uses: mshick/add-pr-comment@v2
+      - name: Comment on PR 💬
+        uses: mshick/add-pr-comment@v2
         with:
           message: "@dependabot recreate"
