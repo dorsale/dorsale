@@ -69,7 +69,7 @@ jobs:
             echo "PR is not from dependabot"
             echo dependabot=false >> $GITHUB_OUTPUT
           fi
-      - if: ${{ steps.check_dependabot.outputs.dependabot }} == 'true'
+      - if: ${{ steps.check_dependabot.outputs.dependabot == 'true' }}
         name: Enable auto-merge 🍾
         run: echo "gh pr merge --auto --squash $PR_URL"
         env:
