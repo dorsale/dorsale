@@ -60,9 +60,13 @@ jobs:
       - name: Extract branch name
         run: echo "BRANCH_NAME=$(echo ${{ github.event.pull_request.head.ref }})" >> $GITHUB_OUTPUT
         id: extract_branch_name
-      - if: startsWith(steps.extract_branch_name.outputs.BRANCH_NAME, 'dependabot/')
-        id: check_dependabot
-        run: echo "dependabot=true" >> $GITHUB_OUTPUT
+      - id: check_dependabot
+        run: |
+          if [[ "${{ steps.extract_branch_name.outputs.BRANCH_NAME }}" == "dependabot"* ]]; then
+            echo "dependabot=true" >> $GITHUB_OUTPUT
+          else
+            echo "dependabot=false" >> $GITHUB_OUTPUT
+          fi
       - if: ${{ steps.check_dependabot.outputs.dependabot }} == 'true'
         name: Enable auto-merge 🍾
         run: gh pr merge --auto --squash "$PR_URL"
