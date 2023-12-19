@@ -2,6 +2,7 @@ import Fastify, { FastifyInstance, FastifyRequest, RouteOptions } from "fastify"
 import fg from "fast-glob";
 import {
   BODY_PARAM_INDEX,
+  BODY_SCHEMA,
   CONTROLLER_PREFIX,
   CONTROLLER_ROUTES,
   DorsaleElement,
@@ -253,6 +254,11 @@ function addRoute(route: RouteEntry, constructor: Function, instance: object) {
     constructor.prototype,
     route.mapTo.method,
   );
+  const bodyValidationSchema = Reflect.getOwnMetadata(
+    BODY_SCHEMA,
+    constructor.prototype,
+    route.mapTo.method,
+  );
   const queryParamIndexes =
     Reflect.getOwnMetadata(
       QUERY_PARAM_INDEXES,
@@ -290,13 +296,19 @@ function addRoute(route: RouteEntry, constructor: Function, instance: object) {
   const parameterMatching: (request: FastifyRequest) => any[] = function (request: FastifyRequest) {
     return paramHandlers.map((f: (request: FastifyRequest) => any) => f(request));
   };
-  return {
+  const res =  {
     method: route.method,
     url: route.url,
     handler: async (request) => {
       return constructor.prototype[route.mapTo.method].call(instance, ...parameterMatching(request));
     },
   } as RouteOptions;
+  if (bodyValidationSchema) {
+    res.schema = {
+      body: bodyValidationSchema,
+    };
+  }
+  return res;
 }
 
 async function importElement(filename: string, name: string) {
