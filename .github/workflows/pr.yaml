@@ -83,6 +83,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       pull-requests: write
+      contents: write
     steps:
       - name: Comment on PR 💬
         uses: mshick/add-pr-comment@v2
