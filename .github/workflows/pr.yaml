@@ -9,6 +9,8 @@ jobs:
   bump-npm-version:
     outputs:
       proceed: ${{ steps.check.outputs.changed }}
+      branch: ${{ steps.extract_branch_name.outputs.branch }}
+      dependabot: ${{ steps.check_dependabot.outputs.dependabot }}
     permissions:
       contents: write
     if: github.event_name == 'pull_request'
@@ -17,6 +19,19 @@ jobs:
       - uses: actions/checkout@v4
         with:
           token: ${{ secrets.PAT }}
+      - name: Extract branch name 🌳
+        id: extract_branch_name
+        run: echo "branch=$(echo ${{ github.event.pull_request.head.ref }})" >> $GITHUB_OUTPUT
+      - name: Check if PR was triggered by dependabot 🤖
+        id: check_dependabot
+        run: |
+          if [[ "${{ steps.extract_branch_name.outputs.branch }}" == "dependabot"* ]]; then
+            echo "PR is from dependabot"
+            echo dependabot=true >> $GITHUB_OUTPUT
+          else
+            echo "PR is not from dependabot"
+            echo dependabot=false >> $GITHUB_OUTPUT
+          fi
       - id: check
         name: Check for version change 📝
         uses: EndBug/version-check@v2
@@ -48,38 +63,9 @@ jobs:
         run: npm ci
       - name: Run tests 🧪
         run: npm run test
-  enable-auto-merge:
-    if: ${{ needs.bump-npm-version.outputs.proceed }} == 'true'
-    permissions:
-      contents: write
-    needs: bump-npm-version
-    runs-on: ubuntu-latest
-    outputs:
-      dependabot: ${{ steps.check_dependabot.outputs.dependabot }}
-    steps:
-      - name: Extract branch name 🌳
-        id: extract_branch_name
-        run: echo "branch=$(echo ${{ github.event.pull_request.head.ref }})" >> $GITHUB_OUTPUT
-      - name: Check if PR was triggered by dependabot 🤖
-        id: check_dependabot
-        run: |
-          if [[ "${{ steps.extract_branch_name.outputs.branch }}" == "dependabot"* ]]; then
-            echo "PR is from dependabot"
-            echo dependabot=true >> $GITHUB_OUTPUT
-          else
-            echo "PR is not from dependabot"
-            echo dependabot=false >> $GITHUB_OUTPUT
-          fi
-      - if: ${{ steps.check_dependabot.outputs.dependabot == 'true' }}
-        name: Enable auto-merge 🍾
-        run: gh pr merge --auto --squash "$PR_URL"
-        env:
-          PR_URL: ${{ github.event.pull_request.html_url }}
-          GITHUB_TOKEN: ${{ secrets.PAT }}
-      - run: echo "${{ steps.check_dependabot.outputs.dependabot }}"
   comment-pr:
-    if: ${{ needs.enable-auto-merge.outputs.dependabot == 'true' && needs.bump-npm-version.outputs.proceed == 'false' }}
-    needs: [enable-auto-merge, bump-npm-version]
+    if: ${{ needs.bump-npm-version.outputs.dependabot == 'true' && needs.bump-npm-version.outputs.proceed == 'false' }}
+    needs: [ bump-npm-version ]
     runs-on: ubuntu-latest
     permissions:
       pull-requests: write
@@ -90,3 +76,16 @@ jobs:
         with:
           message: "@dependabot recreate"
           repo-token: ${{ secrets.PAT }}
+  enable-auto-merge:
+    if: ${{ needs.bump-npm-version.outputs.proceed }} == 'true'
+    permissions:
+      contents: write
+    needs: bump-npm-version
+    runs-on: ubuntu-latest
+    steps:
+      - if: ${{ needs.bump-npm-version.outputs.dependabot == 'true' }}
+        name: Enable auto-merge 🍾
+        run: gh pr merge --auto --squash "$PR_URL"
+        env:
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          GITHUB_TOKEN: ${{ secrets.PAT }}
