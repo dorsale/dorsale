@@ -87,7 +87,6 @@ jobs:
     steps:
       - name: Comment on PR 💬
         uses: mshick/add-pr-comment@v2
-        env:
-          GITHUB_TOKEN: ${{ secrets.PAT }}
         with:
           message: "@dependabot recreate"
+          repo-token: ${{ secrets.PAT }}
