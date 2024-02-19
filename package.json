@@ -59,7 +59,7 @@
   },
   "dependencies": {
     "@dorsale/commons": "^1.0.0",
-    "@typescript-eslint/typescript-estree": "^6.13.2",
+    "@typescript-eslint/typescript-estree": "^7.0.1",
     "acorn": "^8.8.2",
     "acorn-walk": "^8.2.0",
     "estree-walker": "^3.0.3",
