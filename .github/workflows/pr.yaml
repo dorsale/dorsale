@@ -8,7 +8,7 @@ on:
 jobs:
   bump-npm-version:
     outputs:
-      proceed: ${{ steps.check.outputs.changed }}
+      version-changed: ${{ steps.check.outputs.changed }}
       branch: ${{ steps.extract_branch_name.outputs.branch }}
       dependabot: ${{ steps.check_dependabot.outputs.dependabot }}
     permissions:
@@ -77,11 +77,14 @@ jobs:
           message: "@dependabot recreate"
           repo-token: ${{ secrets.PAT }}
   enable-auto-merge:
-    if: ${{ needs.bump-npm-version.outputs.proceed }} == 'true'
+    if: ${{ needs.bump-npm-version.outputs.version-changed == 'true' }}
     permissions:
       contents: write
     needs: bump-npm-version
     runs-on: ubuntu-latest
+    outputs:
+      dependabot: ${{ steps.check_dependabot.outputs.dependabot }}
+      up-to-date: ${{ steps.check-up-to-date.outputs.ok }}
     steps:
       - if: ${{ needs.bump-npm-version.outputs.dependabot == 'true' }}
         name: Enable auto-merge 🍾
