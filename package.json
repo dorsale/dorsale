@@ -16,8 +16,7 @@
     "package.json"
   ],
   "scripts": {
-    "build": "tsc --project tsconfig.prod.json",
-    "debug": "tsx test/debug.ts",
+    "debug": "bun --watch test/debug.ts",
     "test": "mocha --exit",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "lint": "eslint --ext .ts src test"
@@ -55,7 +54,8 @@
     "prettier": "3.2.5",
     "ts-node": "^10.9.1",
     "tsx": "^4.6.2",
-    "typescript": "^5.0.4"
+    "typescript": "^5.0.4",
+    "@types/bun": "latest"
   },
   "dependencies": {
     "@dorsale/commons": "^1.0.0",
