@@ -1,38 +1,44 @@
-import { before } from "mocha";
+import { afterAll, beforeAll, describe, expect, it } from "bun:test";
 import { mountApp } from "../src/app";
 import { AllMethodsController } from "./all-methods-controller/allMethodsController";
-import { expect } from "chai";
 
 describe("All methods controller", () => {
   let server, controller: AllMethodsController;
 
-  before(async () => {
+  beforeAll(async () => {
     const app = await mountApp({
       rootDir: process.cwd() + "/test/all-methods-controller",
     });
     server = app.server;
     controller = app.runtimes.get(
-      "AllMethodsController"
+      "AllMethodsController",
     ) as unknown as AllMethodsController;
   });
 
+  afterAll(async () => {
+    await server.stop();
+  });
+
   it("should return all users", async () => {
-    const response = await server.inject({
+    const request = new Request("http://localhost:3000/", {
       method: "GET",
-      url: "/",
     });
-    expect(response.statusCode).to.equal(200);
-    expect(JSON.parse(response.body)).to.deep.equal(controller.users);
+    const response = await server.fetch(request);
+    expect(response.status).toEqual(200);
+    expect(response.json()).resolves.toEqual(controller.users);
   });
 
   it("should add a new user", async () => {
-    const response = await server.inject({
+    const request = new Request("http://localhost:3000/", {
       method: "POST",
-      url: "/",
-      payload: { id: "3", name: "Henry", age: 25, country: "UK" },
+      body: JSON.stringify({ id: "3", name: "Henry", age: 25, country: "UK" }),
+      headers: {
+        "Content-Type": "application/json",
+      },
     });
-    expect(response.statusCode).to.equal(200);
-    expect(controller.users.map((u) => u.name)).to.include("Henry");
+    const response = await server.fetch(request);
+    expect(response.status).toEqual(200);
+    expect(controller.users.map((u) => u.name)).toContain("Henry");
   });
 
   it("should update a user", async () => {
@@ -42,23 +48,29 @@ describe("All methods controller", () => {
       age: 32,
       country: "Portugal",
     };
-    const response = await server.inject({
+    const request = new Request("http://localhost:3000/1", {
       method: "PUT",
-      url: "/1",
-      payload: newAlfred,
+      body: JSON.stringify(newAlfred),
+      headers: {
+        "Content-Type": "application/json",
+      },
     });
-    expect(response.statusCode).to.equal(200);
-    expect(controller.users).to.deep.include(newAlfred);
+    const response = await server.fetch(request);
+    expect(response.status).toEqual(200);
+    expect(controller.users).toContainEqual(newAlfred);
   });
 
   it("should patch a user", async () => {
-    const response = await server.inject({
+    const request = new Request("http://localhost:3000/2", {
       method: "PATCH",
-      url: "/2",
-      payload: { age: 39 },
+      body: JSON.stringify({ age: 39 }),
+      headers: {
+        "Content-Type": "application/json",
+      },
     });
-    expect(response.statusCode).to.equal(200);
-    expect(controller.users).to.deep.include({
+    const response = await server.fetch(request);
+    expect(response.status).toEqual(200);
+    expect(controller.users).toContainEqual({
       id: "2",
       name: "Bernard",
       age: 39,
@@ -67,11 +79,11 @@ describe("All methods controller", () => {
   });
 
   it("should delete a user", async () => {
-    const response = await server.inject({
+    const request = new Request("http://localhost:3000/2", {
       method: "DELETE",
-      url: "/2",
     });
-    expect(response.statusCode).to.equal(200);
-    expect(controller.users.map((u) => u.id)).to.not.include("2");
+    const response = await server.fetch(request);
+    expect(response.status).toEqual(200);
+    expect(controller.users.map((u) => u.id)).not.toInclude("2");
   });
 });

@@ -1,23 +1,27 @@
-import {mountApp} from "../src/app";
-import {expect} from "chai";
+import { mountApp } from "../src/app";
+import { afterAll, beforeAll, describe, expect, it } from "bun:test";
 
 describe("Two tier app", () => {
   let app;
 
-  before(async () => {
+  beforeAll(async () => {
     app = await mountApp({
       rootDir: process.cwd() + "/test/two-tier-app",
     });
   });
 
-  it("should return all users", async () => {
-    const response = await app.server.inject({
-      method: "GET",
-      url: "/",
-    });
+  afterAll(async () => {
+    await app.server.stop();
+  });
 
-    expect(response.statusCode).to.equal(200);
-    expect(JSON.parse(response.body)).to.deep.equal([
+  it("should return all users", async () => {
+    const request = new Request("http://localhost:3000/", {
+      method: "GET",
+    });
+    const response = await app.server.fetch(request);
+
+    expect(response.status).toEqual(200);
+    expect(response.json()).resolves.toEqual([
       {
         id: "1",
         name: "John Doe",

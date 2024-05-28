@@ -10,14 +10,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v3
+      - name: Setup bun 🐰
+        uses: oven-sh/setup-bun@v1
         with:
-          node-version: 20
-          cache: 'npm'
+          bun-version: latest
       - name: Install dependencies 💿
-        run: npm ci
+        run: bun install --frozen-lockfile
       - name: Run tests 🧪
-        run: npm run test
+        run: bun test
   create-tag:
     needs: test
     runs-on: ubuntu-latest
@@ -27,7 +27,8 @@ jobs:
           token: ${{ secrets.PAT }}
       - name: Get npm version 📦
         id: "get_npm_version"
-        run: echo version=`npm pkg get version | sed 's/"//g'` >> $GITHUB_OUTPUT
+        run: |
+          awk -F'"' '/"version": ".+"/{ print $4; exit; }' package.json  >> $GITHUB_OUTPUT
       - name: Create tag 🏷
         uses: rickstaa/action-create-tag@v1
         id: "tag_create"
@@ -44,7 +45,7 @@ jobs:
           cache: 'npm'
           registry-url: 'https://registry.npmjs.org'
       - name: Install dependencies 💿
-        run: npm ci
+        run: bun install --frozen-lockfile
       - name: Build 🏗
         run: npm run build
       - name: Publish to NPM 📦

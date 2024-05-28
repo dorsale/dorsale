@@ -27,7 +27,7 @@ export type DorsaleOptions = {
 
 export type RouteEntry = {
   url: string;
-  method: string;
+  method: HttpMethod;
   mapTo: {
     controller: string;
     method: string;
@@ -46,7 +46,8 @@ export interface DorsaleElement {
   name: string;
   type: DorsaleElementType;
   constructor: Function;
-  dependencies: string[]
+  dependencies: string[];
+  implemented: string[];
 }
 
 export type DorsaleDependency = {

@@ -1,6 +1,6 @@
 {
   "name": "dorsale",
-  "version": "0.0.116",
+  "version": "0.0.117",
   "description": "Dorsale is an attempt at creating a TS equivalent of Java Spring",
   "repository": {
     "type": "git",
@@ -16,8 +16,7 @@
     "package.json"
   ],
   "scripts": {
-    "build": "tsc --project tsconfig.prod.json",
-    "debug": "tsx test/debug.ts",
+    "debug": "bun --watch test/debug.ts",
     "test": "mocha --exit",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "lint": "eslint --ext .ts src test"
@@ -40,21 +39,15 @@
     "@babel/core": "^7.21.8",
     "@babel/parser": "^7.21.8",
     "@babel/preset-env": "^7.21.5",
-    "@types/chai": "^4.3.11",
-    "@types/mocha": "^10.0.1",
+    "@types/bun": "latest",
     "@types/node": "^20.2.1",
     "@typescript-eslint/eslint-plugin": "^7.2.0",
     "@typescript-eslint/parser": "^7.2.0",
     "babel-walk": "^3.0.0",
-    "chai": "*",
     "eslint": "^8.41.0",
     "eslint-config-prettier": "^9.1.0",
-    "mocha": "*",
-    "mocha-junit-reporter": "^2.2.0",
     "nodemon": "^3.0.2",
     "prettier": "3.2.5",
-    "ts-node": "^10.9.1",
-    "tsx": "^4.6.2",
     "typescript": "^5.0.4"
   },
   "dependencies": {
@@ -65,8 +58,10 @@
     "estree-walker": "^3.0.3",
     "estree-walker-plus": "3.1.5",
     "fast-glob": "^3.2.12",
+    "fast-querystring": "^1.1.2",
     "fastify": "^4.17.0",
     "reflect-metadata": "^0.2.1",
-    "sinon": "^17.0.1"
+    "sinon": "^17.0.1",
+    "wint-js": "^1.2.7"
   }
 }
