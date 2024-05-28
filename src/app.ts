@@ -111,8 +111,9 @@ export class Dorsale {
   getFirstElementWithNoDependency = (start: string) => {
     const dependencies = this.elements.get(start)?.dependencies ?? [];
     if (
-      dependencies.length === 0 ||
-      dependencies.every((dep) => this.ok.has(dep))
+      (!this.implementations.has(start) || this.runtimes.has(this.implementations.get(start)!)) &&
+      (dependencies.length === 0 ||
+      dependencies.every((dep) => this.ok.has(dep)))
     ) {
       return start;
     } else {
@@ -121,8 +122,6 @@ export class Dorsale {
   };
 
   mountElement(elementName: string) {
-    console.log("elements", this.elements)
-    console.log("implementations", this.implementations)
     const element = this.elements.get(elementName);
     if (element === undefined) {
       const implementation = this.implementations.get(elementName)
@@ -133,10 +132,7 @@ export class Dorsale {
       console.log("implementation", implementation)
       const instance = this.runtimes.get(implementation);
       if (instance === undefined) {
-        const implementationElement = this.elements.get(implementation);
-        if (implementationElement === undefined) {
-          throw new Error(`No implementation found for element "${implementation}"`)
-        } else return;
+        throw new Error(`No implementation found for element "${elementName}"`)
       }
       this.runtimes.set(elementName, instance);
       return;
