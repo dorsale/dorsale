@@ -96,8 +96,7 @@ export class Dorsale {
 
   resolveDependencies() {
     while (this.elements.size > 0) {
-      const it = this.elements.keys();
-      const elementName = this.getFirstElementWithNoDependency(it.next().value);
+      const elementName = this.getFirstElementWithNoDependency();
       this.mountElement(elementName);
       this.removeElement(elementName, this.ok);
     }
@@ -108,20 +107,54 @@ export class Dorsale {
     ok.add(elementName);
   }
 
-  getFirstElementWithNoDependency = (start: string) => {
-    const dependencies = this.elements.get(start)?.dependencies ?? [];
-    if (
-      dependencies.length === 0 ||
-      dependencies.every((dep) => this.ok.has(dep))
-    ) {
-      return start;
-    } else {
-      return this.getFirstElementWithNoDependency(dependencies[0]);
+  getFirstElementWithNoDependency = () => {
+    const iterator = this.elements.keys();
+
+    const depthFirstSearch = (start: string) => {
+      console.log("dfs:start", start)
+      const dependencies = this.elements.get(start)?.dependencies ?? [];
+      if (
+        dependencies.length === 0 ||
+        dependencies.every((dep) => this.ok.has(dep))
+      ) {
+        console.log("start has no deps")
+        if (this.interfaces.has(start)) {
+          console.log("start is interface")
+          const implementation = this.implementations.get(start)!
+          if (this.ok.has(implementation)) {
+            console.log("implementation of start is already mounted")
+            return undefined
+          }
+          console.log("forwarding to start implementation", implementation)
+          return depthFirstSearch(implementation);
+        }
+        return start;
+      } else {
+        for (const dep of dependencies) {
+          const res = depthFirstSearch(dep);
+          if (res) {
+            return res;
+          }
+        }
+        console.log("all deps of start have been mounted or start has no deps")
+        return start;
+      }
     }
+    let start = iterator.next().value;
+    while (start) {
+      console.log("start", start)
+      const res = depthFirstSearch(start);
+      if (res) {
+        return res;
+      } else {
+        start = iterator.next().value;
+      }
+    }
+    throw new Error("No element found with no dependencies");
   };
 
   mountElement(elementName: string) {
-    if (this.interfaces.has(elementName)) return;
+    console.log("mounting", elementName)
     const element = this.elements.get(elementName);
     if (element === undefined) {
       throw new Error(`Element "${elementName}" not found`);
@@ -153,7 +186,6 @@ export class Dorsale {
         element.implemented.forEach((implemented) => {
           this.runtimes.set(implemented, instance);
         })
-        console.log("runtimes", this.runtimes);
         break;
       }
       case DorsaleElementType.REPOSITORY: {
@@ -161,7 +193,6 @@ export class Dorsale {
           ...element.dependencies.map((dep) => this.runtimes.get(dep)),
         );
         this.runtimes.set(elementName, instance);
-        console.log("runtimes", this.runtimes);
         break;
       }
       case DorsaleElementType.DAO:
