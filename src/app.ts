@@ -121,6 +121,8 @@ export class Dorsale {
   };
 
   mountElement(elementName: string) {
+    console.log("elements", this.elements)
+    console.log("implementations", this.implementations)
     const element = this.elements.get(elementName);
     if (element === undefined) {
       const implementation = this.implementations.get(elementName)
