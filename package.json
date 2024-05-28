@@ -1,7 +1,7 @@
 {
   "name": "dorsale",
   "version": "0.0.120",
-  "description": "Dorsale is an attempt at creating a TS equivalent of Java Spring",
+  "description": "Dorsale is a Bun-based TypeScript backend framework",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/dorsale/dorsale.git"
@@ -21,15 +21,17 @@
     "lint": "eslint --ext .ts src test"
   },
   "keywords": [
+    "bun",
     "typescript",
-    "framework",
     "backend",
+    "framework",
     "dependency injection",
     "inversion of control",
     "api",
     "rest",
     "lightweight",
-    "spring"
+    "fast",
+    "performance"
   ],
   "author": "Joel DIBASSO <joel@dibasso.fr>",
   "license": "MIT",
