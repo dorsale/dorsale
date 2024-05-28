@@ -55,14 +55,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v3
+      - name: Setup bun 🐰
+        uses: oven-sh/setup-bun@v1
         with:
-          node-version: 20
-          cache: "npm"
+          bun-version: latest
       - name: Install dependencies 💿
-        run: npm ci
+        run: bun install --frozen-lockfile
       - name: Run tests 🧪
-        run: npm run test
+        run: bun test
   comment-pr:
     if: ${{ needs.bump-npm-version.outputs.dependabot == 'true' && needs.bump-npm-version.outputs.version-changed == 'false' }}
     needs: [ bump-npm-version ]
