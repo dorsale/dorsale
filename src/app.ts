@@ -125,11 +125,11 @@ export class Dorsale {
     if (element == undefined) {
       const implementation = this.implementations.get(elementName)
       if (implementation == undefined) {
-        throw new Error("Element not found")
+        throw new Error(`Element "${elementName}" not found`)
       }
       const instance = this.runtimes.get(implementation);
       if (instance == undefined) {
-        throw new Error("Element not found")
+        throw new Error(`Element "${elementName}" not found`)
       }
       this.runtimes.set(elementName, instance);
       return;

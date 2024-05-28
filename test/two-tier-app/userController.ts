@@ -1,5 +1,5 @@
 import { Controller, Get } from "../../src/decorators";
-import type { UserFinder } from "./userFinder";
+import { UserFinder } from "./userFinder";
 
 @Controller()
 export class UserController {
