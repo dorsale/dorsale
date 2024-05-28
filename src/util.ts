@@ -46,7 +46,8 @@ export interface DorsaleElement {
   name: string;
   type: DorsaleElementType;
   constructor: Function;
-  dependencies: string[]
+  dependencies: string[];
+  implemented: string[];
 }
 
 export type DorsaleDependency = {

@@ -97,10 +97,7 @@ export class Dorsale {
   resolveDependencies() {
     while (this.elements.size > 0) {
       const it = this.elements.keys();
-      const elementName = this.getFirstElementWithNoDependency(
-        it.next().value,
-        it,
-      );
+      const elementName = this.getFirstElementWithNoDependency(it.next().value);
       this.mountElement(elementName);
       this.removeElement(elementName, this.ok);
     }
@@ -111,49 +108,23 @@ export class Dorsale {
     ok.add(elementName);
   }
 
-  getFirstElementWithNoDependency = (
-    start: string,
-    iterator: IterableIterator<string>,
-  ) => {
+  getFirstElementWithNoDependency = (start: string) => {
     const dependencies = this.elements.get(start)?.dependencies ?? [];
     if (
       dependencies.length === 0 ||
       dependencies.every((dep) => this.ok.has(dep))
     ) {
-      if (this.interfaces.has(start) && !this.runtimes.has(this.implementations.get(start)!)) {
-        const value = iterator.next().value;
-        if (!value) return value;
-        return this.getFirstElementWithNoDependency(
-          iterator.next().value,
-          iterator,
-        );
-      }
       return start;
     } else {
-      for (const dep of dependencies) {
-        if (!this.ok.has(dep)) {
-          const value = this.getFirstElementWithNoDependency(dep, iterator);
-          if (value) return value;
-        }
-      }
+      return this.getFirstElementWithNoDependency(dependencies[0]);
     }
   };
 
   mountElement(elementName: string) {
+    if (this.interfaces.has(elementName)) return;
     const element = this.elements.get(elementName);
     if (element === undefined) {
-      const implementation = this.implementations.get(elementName);
-      if (implementation == undefined) {
-        throw new Error(`Element "${elementName}" not found`);
-      }
-      console.log("runtimes", this.runtimes);
-      console.log("implementation", implementation);
-      const instance = this.runtimes.get(implementation);
-      if (instance === undefined) {
-        throw new Error(`No implementation found for element "${elementName}"`);
-      }
-      this.runtimes.set(elementName, instance);
-      return;
+      throw new Error(`Element "${elementName}" not found`);
     }
     switch (element.type) {
       case DorsaleElementType.CONTROLLER: {
@@ -179,7 +150,10 @@ export class Dorsale {
           ...element.dependencies.map((dep) => this.runtimes.get(dep)),
         );
         this.runtimes.set(elementName, instance);
-        console.log("runtimes", this.runtimes)
+        element.implemented.forEach((implemented) => {
+          this.runtimes.set(implemented, instance);
+        })
+        console.log("runtimes", this.runtimes);
         break;
       }
       case DorsaleElementType.REPOSITORY: {
@@ -385,6 +359,7 @@ export class Dorsale {
         type: elementInfo.type,
         constructor,
         dependencies: elementInfo.dependsOn,
+        implemented: elementInfo.implemented,
       });
       elementInfo.implemented.forEach((implemented) => {
         this.implementations.set(implemented, name);
