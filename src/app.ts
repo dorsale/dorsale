@@ -127,6 +127,8 @@ export class Dorsale {
       if (implementation == undefined) {
         throw new Error(`Element "${elementName}" not found`)
       }
+      console.log("runtimes", this.runtimes)
+      console.log("implementation", implementation)
       const instance = this.runtimes.get(implementation);
       if (instance === undefined) {
         throw new Error(`No implementation found for element "${elementName}"`)
