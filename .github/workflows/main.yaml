@@ -44,14 +44,6 @@ jobs:
           node-version: 20
           cache: 'npm'
           registry-url: 'https://registry.npmjs.org'
-      - name: Setup bun 🐰
-        uses: oven-sh/setup-bun@v1
-        with:
-          bun-version: latest
-      - name: Install dependencies 💿
-        run: bun install --frozen-lockfile
-      - name: Build 🏗
-        run: npm run build
       - name: Publish to NPM 📦
         run: npm publish
         env:
