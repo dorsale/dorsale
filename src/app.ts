@@ -122,14 +122,14 @@ export class Dorsale {
 
   mountElement(elementName: string) {
     const element = this.elements.get(elementName);
-    if (element == undefined) {
+    if (element === undefined) {
       const implementation = this.implementations.get(elementName)
       if (implementation == undefined) {
         throw new Error(`Element "${elementName}" not found`)
       }
       const instance = this.runtimes.get(implementation);
-      if (instance == undefined) {
-        throw new Error(`Element "${elementName}" not found`)
+      if (instance === undefined) {
+        throw new Error(`No implementation found for element "${elementName}"`)
       }
       this.runtimes.set(elementName, instance);
       return;
