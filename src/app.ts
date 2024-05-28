@@ -111,21 +111,16 @@ export class Dorsale {
     const iterator = this.elements.keys();
 
     const depthFirstSearch = (start: string) => {
-      console.log("dfs:start", start)
       const dependencies = this.elements.get(start)?.dependencies ?? [];
       if (
         dependencies.length === 0 ||
         dependencies.every((dep) => this.ok.has(dep))
       ) {
-        console.log("start has no deps")
         if (this.interfaces.has(start)) {
-          console.log("start is interface")
           const implementation = this.implementations.get(start)!
           if (this.ok.has(implementation)) {
-            console.log("implementation of start is already mounted")
             return undefined
           }
-          console.log("forwarding to start implementation", implementation)
           return depthFirstSearch(implementation);
         }
         return start;
@@ -136,13 +131,11 @@ export class Dorsale {
             return res;
           }
         }
-        console.log("all deps of start have been mounted or start has no deps")
         return start;
       }
     }
     let start = iterator.next().value;
     while (start) {
-      console.log("start", start)
       const res = depthFirstSearch(start);
       if (res) {
         return res;
@@ -154,7 +147,6 @@ export class Dorsale {
   };
 
   mountElement(elementName: string) {
-    console.log("mounting", elementName)
     const element = this.elements.get(elementName);
     if (element === undefined) {
       throw new Error(`Element "${elementName}" not found`);
