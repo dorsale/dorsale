@@ -35,6 +35,7 @@ export class Dorsale {
   customElements: string[];
   router: any;
   ok = new Set<string>();
+  interfaces = new Set<string>();
 
   constructor(options: DorsaleOptions) {
     this.rootDir = options.rootDir || process.cwd() + "/src";
@@ -95,8 +96,10 @@ export class Dorsale {
 
   resolveDependencies() {
     while (this.elements.size > 0) {
+      const it = this.elements.keys();
       const elementName = this.getFirstElementWithNoDependency(
-        this.elements.keys().next().value,
+        it.next().value,
+        it,
       );
       this.mountElement(elementName);
       this.removeElement(elementName, this.ok);
@@ -108,31 +111,46 @@ export class Dorsale {
     ok.add(elementName);
   }
 
-  getFirstElementWithNoDependency = (start: string) => {
+  getFirstElementWithNoDependency = (
+    start: string,
+    iterator: IterableIterator<string>,
+  ) => {
     const dependencies = this.elements.get(start)?.dependencies ?? [];
     if (
-      (!this.implementations.has(start) || this.runtimes.has(this.implementations.get(start)!)) &&
-      (dependencies.length === 0 ||
-      dependencies.every((dep) => this.ok.has(dep)))
+      dependencies.length === 0 ||
+      dependencies.every((dep) => this.ok.has(dep))
     ) {
+      if (this.interfaces.has(start) && !this.runtimes.has(this.implementations.get(start)!)) {
+        const value = iterator.next().value;
+        if (!value) return value;
+        return this.getFirstElementWithNoDependency(
+          iterator.next().value,
+          iterator,
+        );
+      }
       return start;
     } else {
-      return this.getFirstElementWithNoDependency(dependencies[0]);
+      for (const dep of dependencies) {
+        if (!this.ok.has(dep)) {
+          const value = this.getFirstElementWithNoDependency(dep, iterator);
+          if (value) return value;
+        }
+      }
     }
   };
 
   mountElement(elementName: string) {
     const element = this.elements.get(elementName);
     if (element === undefined) {
-      const implementation = this.implementations.get(elementName)
+      const implementation = this.implementations.get(elementName);
       if (implementation == undefined) {
-        throw new Error(`Element "${elementName}" not found`)
+        throw new Error(`Element "${elementName}" not found`);
       }
-      console.log("runtimes", this.runtimes)
-      console.log("implementation", implementation)
+      console.log("runtimes", this.runtimes);
+      console.log("implementation", implementation);
       const instance = this.runtimes.get(implementation);
       if (instance === undefined) {
-        throw new Error(`No implementation found for element "${elementName}"`)
+        throw new Error(`No implementation found for element "${elementName}"`);
       }
       this.runtimes.set(elementName, instance);
       return;
@@ -169,7 +187,7 @@ export class Dorsale {
           ...element.dependencies.map((dep) => this.runtimes.get(dep)),
         );
         this.runtimes.set(elementName, instance);
-        console.log("runtimes", this.runtimes)
+        console.log("runtimes", this.runtimes);
         break;
       }
       case DorsaleElementType.DAO:
@@ -326,18 +344,22 @@ export class Dorsale {
     );
 
     // This function returns an array of the computed values after applying the handlers to the request
-    const computeParameterValues: (request: Request) => Promise<Awaited<any>[]> = async function(
+    const computeParameterValues: (
       request: Request,
-    ) {
+    ) => Promise<Awaited<any>[]> = async function (request: Request) {
       // @ts-ignore
       request.query = qs.parse(request.req.url.split("?")[1]);
-      return await Promise.all(paramHandlers.map(async (f: (request: Request) => any) => await f(request)))
+      return await Promise.all(
+        paramHandlers.map(
+          async (f: (request: Request) => any) => await f(request),
+        ),
+      );
     };
 
     this.router.put(route.method, prefix + route.url, async (req) => {
       const res = await constructor.prototype[route.mapTo.method].call(
         instance,
-          ...(await computeParameterValues(req)),
+        ...(await computeParameterValues(req)),
       );
 
       return Response.json(res);
@@ -366,6 +388,7 @@ export class Dorsale {
       });
       elementInfo.implemented.forEach((implemented) => {
         this.implementations.set(implemented, name);
+        this.interfaces.add(implemented);
       });
     }
   }
@@ -385,7 +408,7 @@ export class Dorsale {
   }
 
   private bodyParamHandler() {
-    return async function(context: any) {
+    return async function (context: any) {
       return await context.req.json();
     };
   }
