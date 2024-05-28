@@ -27,7 +27,7 @@ export type DorsaleOptions = {
 
 export type RouteEntry = {
   url: string;
-  method: string;
+  method: HttpMethod;
   mapTo: {
     controller: string;
     method: string;

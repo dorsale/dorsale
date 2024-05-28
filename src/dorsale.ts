@@ -6,13 +6,5 @@ import { DorsaleOptions } from "./util";
  * @param options The options to use when creating the application
  */
 export async function dorsale(options: DorsaleOptions) {
-  const all = await mountApp(options);
-  all.server.listen({ port: options.port ?? 3000 }, (err, address) => {
-    if (err) {
-      console.error(err);
-      process.exit(1);
-    }
-    console.log(`Server listening at ${address}`);
-  });
-  return all;
+  return await mountApp(options);
 }
