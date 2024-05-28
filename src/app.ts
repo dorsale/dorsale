@@ -155,7 +155,14 @@ export class Dorsale {
         this.runtimes.set(elementName, instance);
         break;
       }
-      case DorsaleElementType.COMPONENT:
+      case DorsaleElementType.COMPONENT: {
+        const instance = new (element.constructor as any)(
+          ...element.dependencies.map((dep) => this.runtimes.get(dep)),
+        );
+        this.runtimes.set(elementName, instance);
+        console.log("runtimes", this.runtimes)
+        break;
+      }
       case DorsaleElementType.REPOSITORY: {
         const instance = new (element.constructor as any)(
           ...element.dependencies.map((dep) => this.runtimes.get(dep)),
