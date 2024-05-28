@@ -161,6 +161,7 @@ export class Dorsale {
           ...element.dependencies.map((dep) => this.runtimes.get(dep)),
         );
         this.runtimes.set(elementName, instance);
+        console.log("runtimes", this.runtimes)
         break;
       }
       case DorsaleElementType.DAO:
