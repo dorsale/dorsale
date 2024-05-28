@@ -35,7 +35,6 @@ export class Dorsale {
   customElements: string[];
   router: any;
   ok = new Set<string>();
-  interfaces = new Set<string>();
 
   constructor(options: DorsaleOptions) {
     this.rootDir = options.rootDir || process.cwd() + "/src";
@@ -116,7 +115,7 @@ export class Dorsale {
         dependencies.length === 0 ||
         dependencies.every((dep) => this.ok.has(dep))
       ) {
-        if (this.interfaces.has(start)) {
+        if (this.implementations.has(start)) {
           const implementation = this.implementations.get(start)!
           if (this.ok.has(implementation)) {
             return undefined
@@ -386,7 +385,6 @@ export class Dorsale {
       });
       elementInfo.implemented.forEach((implemented) => {
         this.implementations.set(implemented, name);
-        this.interfaces.add(implemented);
       });
     }
   }
