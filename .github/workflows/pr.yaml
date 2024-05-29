@@ -81,7 +81,7 @@ jobs:
           message: "@dependabot recreate"
           repo-token: ${{ secrets.PAT }}
   enable-auto-merge:
-    if: ${{ needs.bump-npm-version.outputs.version-changed == 'true' }}
+    if: ${{ needs.bump-npm-version.outputs.dependabot == 'true' && needs.bump-npm-version.outputs.version-changed == 'true'  }}
     permissions:
       contents: write
     needs: bump-npm-version
@@ -90,8 +90,7 @@ jobs:
       dependabot: ${{ steps.check_dependabot.outputs.dependabot }}
       up-to-date: ${{ steps.check-up-to-date.outputs.ok }}
     steps:
-      - if: ${{ needs.bump-npm-version.outputs.dependabot == 'true' }}
-        name: Enable auto-merge 🍾
+      - name: Enable auto-merge 🍾
         run: gh pr merge --auto --squash "$PR_URL"
         env:
           PR_URL: ${{ github.event.pull_request.html_url }}
