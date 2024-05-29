@@ -38,9 +38,13 @@ jobs:
       - if: steps.check.outputs.changed == 'false'
         id: bump
         name: Version bump 👊
+        env:
+          GITHUB_TOKEN: ${{ secrets.PAT }}
         run: |
-          export BUMP_TYPE=$(git log -1 --pretty=%B | grep -Eio '\[(major|minor|patch)\]$' |  sed 's/[][]//g')
+          export BUMP_TYPE=$(gh pr view ${{ github.event.number }} --json commits --jq '.commits[].messageBody' | grep -Eio '\[(major|minor|patch)\]$' |  sed 's/[][]//g')
+          echo "Bump type from PR commit message: ${BUMP_TYPE:-none}"
           export BUMP_TYPE="${BUMP_TYPE:-patch}"
+          echo "Bumping version with $BUMP_TYPE"
           echo version=`npm version $BUMP_TYPE --no-git-tag-version` >> $GITHUB_OUTPUT
           echo bump_type=$BUMP_TYPE >> $GITHUB_OUTPUT
       - if: steps.check.outputs.changed == 'false'
