@@ -12,8 +12,7 @@ import {
   QUERY_PARAM_INDEXES,
   RouteEntry,
 } from "./util";
-import { Node } from "estree";
-import { walk } from "estree-walker";
+import { Node, walk } from "estree-walker";
 import { t } from "wint-js";
 import type { Server } from "bun";
 import qs from "fast-querystring";
