@@ -50,7 +50,7 @@
     "estree-walker": "^3.0.3",
     "fast-querystring": "^1.1.2",
     "reflect-metadata": "^0.2.1",
-    "sinon": "^17.0.1",
+    "sinon": "^18.0.0",
     "wint-js": "^1.2.7"
   }
 }
