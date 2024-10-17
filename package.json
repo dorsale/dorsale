@@ -1,6 +1,6 @@
 {
   "name": "dorsale",
-  "version": "0.1.10",
+  "version": "0.1.11",
   "description": "Dorsale is a Bun-based TypeScript backend framework",
   "repository": {
     "type": "git",
@@ -36,12 +36,15 @@
   "author": "Joel DIBASSO <joel@dibasso.fr>",
   "license": "MIT",
   "devDependencies": {
+    "@eslint/eslintrc": "^3.1.0",
+    "@eslint/js": "^9.12.0",
     "@types/bun": "latest",
     "@types/node": "^22.7.6",
     "@typescript-eslint/eslint-plugin": "^8.9.0",
     "@typescript-eslint/parser": "^7.2.0",
     "eslint": "^9.12.0",
     "eslint-config-prettier": "^9.1.0",
+    "globals": "^15.11.0",
     "prettier": "3.3.3"
   },
   "dependencies": {
