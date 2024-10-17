@@ -10,7 +10,6 @@ jobs:
     outputs:
       version-changed: ${{ steps.check.outputs.changed }}
       branch: ${{ steps.extract_branch_name.outputs.branch }}
-      dependabot: ${{ steps.check_dependabot.outputs.dependabot }}
     permissions:
       contents: write
     if: github.event_name == 'pull_request'
@@ -22,16 +21,6 @@ jobs:
       - name: Extract branch name 🌳
         id: extract_branch_name
         run: echo "branch=$(echo ${{ github.event.pull_request.head.ref }})" >> $GITHUB_OUTPUT
-      - name: Check if PR was triggered by dependabot 🤖
-        id: check_dependabot
-        run: |
-          if [[ "${{ steps.extract_branch_name.outputs.branch }}" == "dependabot"* ]]; then
-            echo "PR is from dependabot"
-            echo dependabot=true >> $GITHUB_OUTPUT
-          else
-            echo "PR is not from dependabot"
-            echo dependabot=false >> $GITHUB_OUTPUT
-          fi
       - id: check
         name: Check for version change 📝
         uses: EndBug/version-check@v2
@@ -67,31 +56,3 @@ jobs:
         run: bun install --frozen-lockfile
       - name: Run tests 🧪
         run: bun test
-  comment-pr:
-    if: ${{ needs.bump-npm-version.outputs.dependabot == 'true' && needs.bump-npm-version.outputs.version-changed == 'false' }}
-    needs: [ bump-npm-version ]
-    runs-on: ubuntu-latest
-    permissions:
-      pull-requests: write
-      contents: write
-    steps:
-      - name: Comment on PR 💬
-        uses: mshick/add-pr-comment@v2
-        with:
-          message: "@dependabot recreate"
-          repo-token: ${{ secrets.PAT }}
-  enable-auto-merge:
-    if: ${{ needs.bump-npm-version.outputs.dependabot == 'true' && needs.bump-npm-version.outputs.version-changed == 'true'  }}
-    permissions:
-      contents: write
-    needs: bump-npm-version
-    runs-on: ubuntu-latest
-    outputs:
-      dependabot: ${{ steps.check_dependabot.outputs.dependabot }}
-      up-to-date: ${{ steps.check-up-to-date.outputs.ok }}
-    steps:
-      - name: Enable auto-merge 🍾
-        run: gh pr merge --auto --squash "$PR_URL"
-        env:
-          PR_URL: ${{ github.event.pull_request.html_url }}
-          GITHUB_TOKEN: ${{ secrets.PAT }}
