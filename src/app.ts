@@ -43,7 +43,6 @@ export class Dorsale {
     this.customElements = this.plugins
       .map((p) => p.customElements ?? [])
       .reduce((acc, val) => acc.concat(val), []);
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
     this.router = new t.FastWint();
   }
 
@@ -369,6 +368,7 @@ export class Dorsale {
 
   private async addElementToGraph(file: string) {
     const ast = fileToAst(file);
+    // @ts-ignore
     const elementInfo = this.tryParsingElementInfo(ast);
     if (elementInfo) {
       const { name, constructor } = await this.importElement(
