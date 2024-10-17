@@ -1,6 +1,6 @@
 {
   "name": "dorsale",
-  "version": "0.1.9",
+  "version": "0.1.10",
   "description": "Dorsale is a Bun-based TypeScript backend framework",
   "repository": {
     "type": "git",
