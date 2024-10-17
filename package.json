@@ -1,6 +1,6 @@
 {
   "name": "dorsale",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "description": "Dorsale is a Bun-based TypeScript backend framework",
   "repository": {
     "type": "git",
@@ -46,7 +46,7 @@
   },
   "dependencies": {
     "@dorsale/commons": "^1.0.0",
-    "@typescript-eslint/typescript-estree": "^7.11.0",
+    "@typescript-eslint/typescript-estree": "^8.9.0",
     "estree-walker": "^3.0.3",
     "fast-querystring": "^1.1.2",
     "reflect-metadata": "^0.2.1",
