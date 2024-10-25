@@ -66,6 +66,7 @@ function addEndpoint(
   Reflect.defineMetadata(ENDPOINT_PARAMS, params, target, propertyKey);
   routes.push({
     url,
+    // @ts-ignore
     method: method.toString(),
     mapTo: {
       // @ts-ignore

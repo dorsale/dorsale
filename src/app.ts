@@ -36,7 +36,7 @@ export class Dorsale {
   ok = new Set<string>();
 
   constructor(options: DorsaleOptions) {
-    this.rootDir = options.rootDir || process.cwd() + "/src";
+    this.rootDir = options.rootDir || process.cwd();
     this.runtimes = new Map<string, object>();
     this.plugins = options.plugins ?? [];
     this.pluginData = {};
@@ -67,6 +67,8 @@ export class Dorsale {
     const resolveDependenciesTime = Math.round(performance.now() - start);
     console.log("Dependencies resolved in", resolveDependenciesTime, "ms");
 
+    console.log("Dorsale listening on", this.server.url.href);
+
     return {
       server: this.server,
       runtimes: this.runtimes,
@@ -95,28 +97,32 @@ export class Dorsale {
     while (this.elements.size > 0) {
       const elementName = this.getFirstElementWithNoDependency();
       this.mountElement(elementName);
-      this.removeElement(elementName, this.ok);
+      this.removeElement(elementName);
     }
   }
 
-  removeElement(elementName: string, ok: Set<string>) {
+  /**
+   * Remove the given element name from the `elements` set and add it to the `ok` set
+   * @param elementName the name of the element
+   */
+  removeElement(elementName: string) {
     this.elements.delete(elementName);
-    ok.add(elementName);
+    this.ok.add(elementName);
   }
 
   getFirstElementWithNoDependency = () => {
     const iterator = this.elements.keys();
 
-    const depthFirstSearch = (start: string) => {
+    const depthFirstSearch = (start: string): string | undefined => {
       const dependencies = this.elements.get(start)?.dependencies ?? [];
       if (
         dependencies.length === 0 ||
         dependencies.every((dep) => this.ok.has(dep))
       ) {
         if (this.implementations.has(start)) {
-          const implementation = this.implementations.get(start)!
+          const implementation = this.implementations.get(start)!;
           if (this.ok.has(implementation)) {
-            return undefined
+            return undefined;
           }
           return depthFirstSearch(implementation);
         }
@@ -130,7 +136,7 @@ export class Dorsale {
         }
         return start;
       }
-    }
+    };
     let start = iterator.next().value;
     while (start) {
       const res = depthFirstSearch(start);
@@ -174,7 +180,7 @@ export class Dorsale {
         this.runtimes.set(elementName, instance);
         element.implemented.forEach((implemented) => {
           this.runtimes.set(implemented, instance);
-        })
+        });
         break;
       }
       case DorsaleElementType.REPOSITORY: {
@@ -230,9 +236,11 @@ export class Dorsale {
             for (const e in DorsaleElementType) {
               if (
                 (d.expression.name ?? d.expression.callee.name) ===
+                // @ts-ignore
                 DorsaleElementType[e]
               ) {
                 res.name = node?.id?.name;
+                // @ts-ignore
                 res.type = DorsaleElementType[e];
                 break;
               }
@@ -350,7 +358,7 @@ export class Dorsale {
       );
     };
 
-    this.router.put(route.method, prefix + route.url, async (req) => {
+    this.router.put(route.method, prefix + route.url, async (req: any) => {
       const res = await constructor.prototype[route.mapTo.method].call(
         instance,
         ...(await computeParameterValues(req)),
