@@ -1,24 +1,24 @@
 {
   "name": "dorsale",
-  "version": "0.1.12",
-  "description": "Dorsale is a Bun-based TypeScript backend framework",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/dorsale/dorsale.git"
-  },
   "type": "module",
-  "main": "src/index.ts",
-  "files": [
-    "src",
-    "LICENSE",
-    "README.md",
-    "package.json"
-  ],
+  "version": "0.1.12",
+  "main": "./src/index.ts",
+  "description": "Dorsale is a Bun-based TypeScript backend framework",
   "scripts": {
     "debug": "bun --watch test/debug.ts",
     "test": "bun test",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "lint": "eslint --ext .ts src test"
+  },
+  "files": [
+    "src",
+    "package.json",
+    "tsconfig.json",
+    "LICENSE"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dorsale/dorsale.git"
   },
   "keywords": [
     "bun",
@@ -50,6 +50,7 @@
   "dependencies": {
     "@dorsale/commons": "^1.0.0",
     "@typescript-eslint/typescript-estree": "^8.9.0",
+    "acorn": "^8.13.0",
     "estree-walker": "^3.0.3",
     "fast-querystring": "^1.1.2",
     "reflect-metadata": "^0.2.1",

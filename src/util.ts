@@ -1,7 +1,7 @@
 import { Node } from "estree";
 import fs from "fs";
 import { parse } from "@typescript-eslint/typescript-estree";
-import { FastifyInstance } from "fastify";
+import * as Bun from "bun";
 
 export function fileToAst(filename: string) {
   const code = fs.readFileSync(filename, "utf8");
@@ -70,7 +70,7 @@ export type DorsalePlugin = {
     server,
   }: {
     pluginData: any;
-    server: FastifyInstance;
+    server: Bun.Server;
   }) => void;
   onMount: {
     [element: string]: (

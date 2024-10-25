@@ -1,17 +1,17 @@
 {
   "compilerOptions": {
-    "target": "es6",
+    "target": "es2020",
     "module": "esnext",
-    "moduleResolution": "bundler",
-    "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true,
-    "experimentalDecorators": true,
-    "emitDecoratorMetadata": true,
-    "forceConsistentCasingInFileNames": true,
     "strict": true,
-    "noImplicitAny": false,
+    "esModuleInterop": true,
+    "moduleResolution": "node",
     "skipLibCheck": true,
+    "noUnusedLocals": true,
+    "noImplicitAny": true,
+    "allowJs": true,
+    "noEmit": true,
     "outDir": "dist",
-    "declaration": true
+    "resolveJsonModule": true,
+    "experimentalDecorators": true
   }
 }
