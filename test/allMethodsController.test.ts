@@ -1,9 +1,10 @@
 import { afterAll, beforeAll, describe, expect, it } from "bun:test";
 import { mountApp } from "../src/app";
 import { AllMethodsController } from "./all-methods-controller/allMethodsController";
+import type { Server } from "bun";
 
 describe("All methods controller", () => {
-  let server, controller: AllMethodsController;
+  let server: Server, controller: AllMethodsController;
 
   beforeAll(async () => {
     const app = await mountApp({
