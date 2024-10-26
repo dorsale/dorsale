@@ -18,7 +18,7 @@ import {
 export function Controller(prefix?: string) {
   return function (target: Function) {
     Reflect.defineMetadata(CONTROLLER_PREFIX, prefix, target);
-  }
+  };
 }
 
 /**
@@ -36,7 +36,7 @@ export function Query(target: object, propertyKey: string, index: number) {
     QUERY_PARAM_INDEXES,
     queryParamIndexes,
     target,
-    propertyKey
+    propertyKey,
   );
 }
 
@@ -53,7 +53,7 @@ function addEndpoint(
   url: string,
   target: object,
   propertyKey: string,
-  descriptor: PropertyDescriptor
+  descriptor: PropertyDescriptor,
 ) {
   const routes: RouteEntry[] =
     Reflect.getOwnMetadata(CONTROLLER_ROUTES, target) || [];
@@ -85,7 +85,7 @@ export function Get(url: string) {
   return function (
     target: object,
     propertyKey: string,
-    descriptor: PropertyDescriptor
+    descriptor: PropertyDescriptor,
   ) {
     addEndpoint(HttpMethod.GET, url, target, propertyKey, descriptor);
   };
@@ -100,7 +100,7 @@ export function Post(url: string) {
   return function (
     target: object,
     propertyKey: string,
-    descriptor: PropertyDescriptor
+    descriptor: PropertyDescriptor,
   ) {
     addEndpoint(HttpMethod.POST, url, target, propertyKey, descriptor);
   };
@@ -115,7 +115,7 @@ export function Put(url: string) {
   return function (
     target: object,
     propertyKey: string,
-    descriptor: PropertyDescriptor
+    descriptor: PropertyDescriptor,
   ) {
     addEndpoint(HttpMethod.PUT, url, target, propertyKey, descriptor);
   };
@@ -130,7 +130,7 @@ export function Patch(url: string) {
   return function (
     target: object,
     propertyKey: string,
-    descriptor: PropertyDescriptor
+    descriptor: PropertyDescriptor,
   ) {
     addEndpoint(HttpMethod.PATCH, url, target, propertyKey, descriptor);
   };
@@ -145,7 +145,7 @@ export function Delete(url: string) {
   return function (
     target: object,
     propertyKey: string,
-    descriptor: PropertyDescriptor
+    descriptor: PropertyDescriptor,
   ) {
     addEndpoint(HttpMethod.DELETE, url, target, propertyKey, descriptor);
   };
@@ -170,7 +170,7 @@ export function Body(target: object, propertyKey: string, index: number) {
 export function BodySchema(schema: object) {
   return function (target: object, propertyKey: string) {
     Reflect.defineMetadata(BODY_SCHEMA, schema, target, propertyKey);
-  }
+  };
 }
 
 export function Component(target: Function) {
