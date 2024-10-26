@@ -16,6 +16,13 @@ import { Node, walk } from "estree-walker";
 import { t } from "wint-js";
 import type { Server } from "bun";
 import qs from "fast-querystring";
+import { access } from "node:fs/promises";
+
+class DirectoryDoesNotExistsError extends Error {
+  constructor(rootDir: string) {
+    super(`Directory "${rootDir}" does not exist.`);
+  }
+}
 
 export type DorsaleApp = {
   server: Server;
@@ -84,6 +91,12 @@ export class Dorsale {
   }
 
   async getAllTsFiles() {
+    try {
+      await access(this.rootDir);
+    } catch {
+      throw new DirectoryDoesNotExistsError(this.rootDir);
+    }
+
     const glob = new Bun.Glob("**.ts");
     const res: string[] = [];
 
