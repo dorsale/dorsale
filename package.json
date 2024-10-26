@@ -8,7 +8,9 @@
     "debug": "bun --watch test/debug.ts",
     "test": "bun test",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
-    "lint": "eslint --ext .ts src test"
+    "check-format": "prettier --check \"src/**/*.ts\" \"test/**/*.ts\"",
+    "lint": "eslint src test",
+    "check-types": "tsc --noEmit"
   },
   "files": [
     "src",

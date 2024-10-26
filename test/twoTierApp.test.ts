@@ -1,8 +1,8 @@
-import { mountApp } from "../src/app";
+import { DorsaleApp, mountApp } from "../src/app";
 import { afterAll, beforeAll, describe, expect, it } from "bun:test";
 
 describe("Two tier app", () => {
-  let app;
+  let app: DorsaleApp;
 
   beforeAll(async () => {
     app = await mountApp({
