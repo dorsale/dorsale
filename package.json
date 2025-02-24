@@ -1,14 +1,16 @@
 {
   "name": "dorsale",
   "type": "module",
-  "version": "0.1.17",
+  "version": "0.1.18",
   "main": "./src/index.ts",
   "description": "Dorsale is a Bun-based TypeScript backend framework",
   "scripts": {
     "debug": "bun --watch test/debug.ts",
     "test": "bun test",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
-    "lint": "eslint --ext .ts src test"
+    "check-format": "prettier --check \"src/**/*.ts\" \"test/**/*.ts\"",
+    "lint": "eslint src test",
+    "check-types": "tsc --noEmit"
   },
   "files": [
     "src",
