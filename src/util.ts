@@ -1,15 +1,4 @@
-import { Node } from "estree";
-import fs from "fs";
-import { parse } from "@typescript-eslint/typescript-estree";
 import * as Bun from "bun";
-
-export function fileToAst(filename: string) {
-  const code = fs.readFileSync(filename, "utf8");
-  return parse(code, {
-    loc: true,
-    range: true,
-  }) as Node;
-}
 
 export enum DorsaleElementType {
   CONTROLLER = "Controller",
@@ -50,11 +39,6 @@ export interface DorsaleElement {
   implemented: string[];
 }
 
-export type DorsaleDependency = {
-  name: string;
-  resolved: boolean;
-};
-
 export type ParseResult = {
   name: string;
   type: DorsaleElementType;
@@ -80,10 +64,3 @@ export type DorsalePlugin = {
     ) => void;
   };
 };
-
-export const QUERY_PARAM_INDEXES = "queryParamIndexes";
-export const BODY_PARAM_INDEX = "bodyParamIndex";
-export const ENDPOINT_PARAMS = "endpointParams";
-export const CONTROLLER_ROUTES = "controllerRoutes";
-export const CONTROLLER_PREFIX = "controllerPrefix";
-export const BODY_SCHEMA = "bodySchema";
