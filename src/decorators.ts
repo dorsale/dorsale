@@ -1,15 +1,14 @@
 import * as acorn from "acorn";
 import "reflect-metadata";
+import { HttpMethod, RouteEntry } from "./util";
 import {
   BODY_PARAM_INDEX,
   BODY_SCHEMA,
   CONTROLLER_PREFIX,
   CONTROLLER_ROUTES,
   ENDPOINT_PARAMS,
-  HttpMethod,
   QUERY_PARAM_INDEXES,
-  RouteEntry
-} from "./util";
+} from "./constants";
 
 /**
  * Decorator for controller classes

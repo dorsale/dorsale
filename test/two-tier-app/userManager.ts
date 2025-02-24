@@ -49,6 +49,6 @@ export class UserManager implements UserFinder, UserEditor {
     if (user) {
       Object.assign(user, updateInstructions);
     }
-    return Promise.resolve(undefined);
+    return Promise.resolve();
   }
 }
