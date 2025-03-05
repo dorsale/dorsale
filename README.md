@@ -8,13 +8,25 @@ If you benchmark it, please let me know the results!
 
 ## Installation
 
+Quick and easy, just:
 ```shell
 bun add dorsale
 ```
 
+You also need to enable TypeScript's decorators feature by adding the following options to your `tsconfig.json`:
+
+```json
+{
+  "compilerOptions": {
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true
+  }
+}
+```
+
 ## Getting started
 
-### Bootstrapping
+### Your first dorsale app
 
 The setup is intentionally minimalistic. Bootstrapping a Dorsale application is as simple as:
 
@@ -116,13 +128,15 @@ export class UserController {
 }
 ```
 
-You just have to run the file containing the `dorsale` call, and you're good to go!
+You just have to run the file containing the call to the `dorsale` function, and you're good to go!
 The other components will be automatically discovered and injected. This reduces the amount of boilerplate code you have
-to write.  
-⚠️ Important: you must import interfaces as `type` in the controller file, this is a limitation of Bun. (see https://github.com/oven-sh/bun/issues/8618)
+to write.
 
+⚠️ Important: you **must** import interfaces as `type` in the controller file, this is a limitation of Bun. (
+see https://github.com/oven-sh/bun/issues/8618)
 
-By default, Dorsale will look for components in the `src` folder, but you can change this by passing a `rootDir` option
+By default, Dorsale will look for components in the current directory, but you can change this by passing a `rootDir`
+option
 to the `dorsale` call.
 
 ```ts

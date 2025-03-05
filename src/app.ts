@@ -41,6 +41,7 @@ export async function mountApp(options: DorsaleOptions): Promise<DorsaleApp> {
   const { runtimes, router } = resolveDependencies(elements, implementations);
   const server = Bun.serve({
     fetch: router.build().query as any,
+    port: options.port,
   });
   const resolveDependenciesTime = Math.round(performance.now() - start);
   console.log("Dependencies resolved in", resolveDependenciesTime, "ms");
