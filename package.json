@@ -1,7 +1,7 @@
 {
   "name": "dorsale",
   "type": "module",
-  "version": "0.1.23",
+  "version": "0.1.24",
   "main": "./src/index.ts",
   "description": "Dorsale is a Bun-based TypeScript backend framework",
   "scripts": {
@@ -41,7 +41,7 @@
     "@eslint/eslintrc": "^3.1.0",
     "@eslint/js": "^9.12.0",
     "@types/bun": "latest",
-    "@types/node": "^22.7.6",
+    "@types/node": "^24.0.2",
     "@typescript-eslint/eslint-plugin": "^8.9.0",
     "@typescript-eslint/parser": "^8.10.0",
     "eslint": "^9.12.0",
