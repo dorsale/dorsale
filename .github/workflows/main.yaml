@@ -5,6 +5,9 @@ on:
     branches:
       - main
 
+permissions:
+  id-token: write
+
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -46,5 +49,3 @@ jobs:
           registry-url: 'https://registry.npmjs.org'
       - name: Publish to NPM 📦
         run: npm publish
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
