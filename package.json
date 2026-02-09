@@ -1,7 +1,7 @@
 {
   "name": "dorsale",
   "type": "module",
-  "version": "0.1.25",
+  "version": "0.1.26",
   "main": "./src/index.ts",
   "description": "Dorsale is a Bun-based TypeScript backend framework",
   "scripts": {
